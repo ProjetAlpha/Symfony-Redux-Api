@@ -1,0 +1,4 @@
+me:
+  path: /api/me/
+  controller: App\Controller\ApiController::me
+  methods: POST

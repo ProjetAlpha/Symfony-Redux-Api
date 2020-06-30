@@ -1,0 +1,12 @@
+App\Entity\User:
+        constraints:
+            - Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity: email
+        properties:
+            email:
+                - Email:
+                    mode: strict
+                - NotBlank: ~
+        password: 
+                - NotBlank: ~
+                - Length:
+                    min: 7

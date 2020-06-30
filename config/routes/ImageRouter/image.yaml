@@ -1,0 +1,7 @@
+upload:
+  path: /image/upload
+  controller: App\Controller\GalleryController::upload
+
+delete:
+  path : /image/delete
+  controller: App\Controller\GalleryController::delete

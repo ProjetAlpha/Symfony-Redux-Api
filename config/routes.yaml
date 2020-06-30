@@ -1,3 +1,15 @@
-#index:
-#    path: /
-#    controller: App\Controller\DefaultController::index
+index:
+  path: /
+  controller: App\Controller\RegistrationController::index
+
+image_routes:
+  resource: './routes/ImageRouter'
+  type:     directory
+
+user_routes:
+  resource: './routes/UserRouter'
+  type:     directory
+
+api_routes:
+  resource: './routes/ApiRouter'
+  type:     directory
