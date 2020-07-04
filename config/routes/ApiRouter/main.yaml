@@ -2,3 +2,12 @@ me:
   path: /api/me/
   controller: App\Controller\ApiController::me
   methods: POST
+
+upload_image:
+  path: /api/image/upload
+  controller: App\Controller\ApiController::uploadImage
+  methods: POST
+
+search_image:
+  path: /api/image/search
+  controller: App\Controller\ApiController::searchImages

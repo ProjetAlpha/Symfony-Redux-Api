@@ -3,6 +3,8 @@
 namespace App\Tests\Repository;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Repository\UserRepository;
+use App\Tests\FileManagement\TestImage;
 
 class UserRepositoryTest extends WebTestCase
 {
@@ -127,12 +129,65 @@ class UserRepositoryTest extends WebTestCase
         $this->assertEquals(201, $client->getResponse()->getStatusCode());
     }
 
+    public function testIfOneUserHasUploadedImages()
+    {
+        $client = static::createClient();
+
+        extract($this->createRandomUser());
+
+        $client->request(
+            'POST',
+            '/register',
+            [
+                'api_token' => $apiToken,
+                'email' =>  $email,
+                'password' => $password,
+            ]
+        );
+
+        $testImagePath = $client->getKernel()->getContainer()->getParameter('image_test');
+        
+        $firstImage = new TestImage($testImagePath, true);
+        $base64Image = base64_encode(file_get_contents($firstImage->getPath()));
+
+        $client->request('POST', '/api/image/upload', [
+            'base64_image' => $base64Image,
+            'name' => $firstImage->getName(),
+            'extension' => $firstImage->getExtension()
+        ], [], [
+            'HTTP_X-Requested-With' => 'XMLHttpRequest',
+            'HTTP_X-AUTH-TOKEN' => $apiToken
+        ]);
+
+        $secondImage = new TestImage($testImagePath, true);
+        $base64Image = base64_encode(file_get_contents($secondImage->getPath()));
+
+        $client->request('POST', '/api/image/upload', [
+            'base64_image' => $base64Image,
+            'name' => $secondImage->getName(),
+            'extension' => $secondImage->getExtension()
+        ], [], [
+            'HTTP_X-Requested-With' => 'XMLHttpRequest',
+            'HTTP_X-AUTH-TOKEN' => $apiToken
+        ]);
+
+        $client->request('POST', '/api/image/search', [], [], [
+            'HTTP_X-AUTH-TOKEN' => $apiToken,
+            'HTTP_X-Requested-With' => 'XMLHttpRequest'
+        ]);
+
+        $data = json_decode($client->getResponse()->getContent(), true);
+        
+        $this->assertEquals(2, count($data['images']));
+    }
+
     private function createRandomUser() : array
     {
         $apiToken = bin2hex(random_bytes(32));
         $password = bin2hex(random_bytes(32));
-        $randomNumber = rand(0, 10000);
-        $email = 'yo.' . $randomNumber . '.yolo@gmail.com';
+        $randomNumber = rand(0, 100000);
+        $name = bin2hex(random_bytes(10));
+        $email = $name . '-' . $randomNumber . '.yolo@gmail.com';
 
         return ['email' => $email, 'password' => $password, 'apiToken' => $apiToken];
     }

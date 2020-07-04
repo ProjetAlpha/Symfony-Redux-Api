@@ -36,6 +36,24 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->_em->flush();
     }
 
+    /**
+    * Repository method for finding the newest inserted
+    * entry inside the database. Will return the latest
+    * entry when one is existent, otherwise will return
+    * null.
+    *
+    * @return MyTable|null
+    */
+    public function findLastInserted()
+    {
+        return $this
+            ->createQueryBuilder("e")
+            ->orderBy("id", "DESC")
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     // /**
     //  * @return User[] Returns an array of User objects
     //  */
