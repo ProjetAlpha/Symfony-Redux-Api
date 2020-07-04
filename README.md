@@ -1,1 +1,1 @@
-Basic api fetch / upload / delete with symfony and phpunit.
+Basic api fetch / upload / delete with Symfony and PHPunit.
