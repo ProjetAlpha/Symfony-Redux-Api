@@ -4,6 +4,7 @@ namespace App\Tests\FileManagement;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use App\Tests\FileManagement\TestImage;
+use App\Tests\UserHelper;
 use App\Repository\UserRepository;
 use App\Repository\ImageRepository;
 
@@ -54,17 +55,11 @@ class UploadFileTest extends WebTestCase
         $client = static::createClient();
 
         // create a random user
-        extract($this->createRandomUser());
+        extract(UserHelper::createRandomUser());
 
-        $client->request(
-            'POST',
-            '/register',
-            [
-                'api_token' => $apiToken,
-                'email' => $email,
-                'password' => $password,
-            ]
-        );
+        UserHelper::registerUser($client, $email, $apiToken, $password);
+
+        UserHelper::loginUser($client, $email, $password);
 
         // find api user
         $client->request('POST', '/api/me/', [], [], ['HTTP_X-AUTH-TOKEN' => $apiToken]);
@@ -99,16 +94,5 @@ class UploadFileTest extends WebTestCase
         
         if (!file_exists($destination))
             $this->fail('Image not saved.');*/
-    }
-
-    private function createRandomUser() : array
-    {
-        $apiToken = bin2hex(random_bytes(32));
-        $password = bin2hex(random_bytes(32));
-        $randomNumber = rand(0, 10000);
-        $name = bin2hex(random_bytes(10));
-        $email = $name . '-' . $randomNumber . '.yolo@gmail.com';
-
-        return ['email' => $email, 'password' => $password, 'apiToken' => $apiToken];
     }
 }
