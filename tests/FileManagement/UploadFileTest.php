@@ -5,8 +5,6 @@ namespace App\Tests\FileManagement;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use App\Tests\FileManagement\TestImage;
 use App\Tests\UserHelper;
-use App\Repository\UserRepository;
-use App\Repository\ImageRepository;
 
 /*
     -- Api request support test :
