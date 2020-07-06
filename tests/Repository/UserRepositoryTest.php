@@ -5,19 +5,49 @@ namespace App\Tests\Repository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use App\Repository\UserRepository;
 use App\Tests\FileManagement\TestImage;
+use App\Tests\UserHelper;
 
 class UserRepositoryTest extends WebTestCase
 {
-
     public function testUnauthoriziedApiUser()
     {
         $client = static::createClient();
 
         // create a random user
-        extract($this->createRandomUser());
+        extract(UserHelper::createRandomUser());
 
         // find api user token
         $client->request('POST', '/api/me/', [], [], ['HTTP_X-AUTH-TOKEN' => $apiToken]);
+
+        // check unauthorizied response status
+        $this->assertEquals(401, $client->getResponse()->getStatusCode());
+    }
+
+    public function testIfUserIsNOTAuthenticated()
+    {
+        $client = static::createClient();
+
+        // create a random user
+        extract(UserHelper::createRandomUser());
+
+        UserHelper::registerUser($client, $email, $apiToken, $password);
+
+        // find api user token
+        $client->request('POST', '/api/me/', [], [], []);
+
+        // check unauthorizied response status
+        $this->assertEquals(401, $client->getResponse()->getStatusCode());
+    }
+
+    public function testIfUserWithoutAuthentificationStrategieIsUnauthorized()
+    {
+        $client = static::createClient();
+
+        // create a random user
+        extract(UserHelper::createRandomUser());
+
+        // find api user token
+        $client->request('POST', '/api/me/', [], [], []);
 
         // check unauthorizied response status
         $this->assertEquals(401, $client->getResponse()->getStatusCode());
@@ -28,19 +58,11 @@ class UserRepositoryTest extends WebTestCase
         $client = static::createClient();
 
         // create a random user
-        extract($this->createRandomUser());
+        extract(UserHelper::createRandomUser());
 
-        $client->request(
-            'POST',
-            '/register',
-            [
-                'api_token' => $apiToken,
-                'email' => $email,
-                'password' => $password,
-            ]
-        );
+        UserHelper::registerUser($client, $email, $apiToken, $password);
 
-        $this->assertEquals(201, $client->getResponse()->getStatusCode());
+        UserHelper::loginUser($client, $email, $password);
 
         // find api user token
         $client->request('POST', '/api/me/', [], [], ['HTTP_X-AUTH-TOKEN' => $apiToken]);
@@ -61,17 +83,9 @@ class UserRepositoryTest extends WebTestCase
     {
         $client = static::createClient();
 
-        extract($this->createRandomUser());
+        extract(UserHelper::createRandomUser());
 
-        $client->request(
-            'POST',
-            '/register',
-            [
-                'api_token' => $apiToken,
-                'email' => $email,
-                'password' => $password,
-            ]
-        );
+        UserHelper::registerUser($client, $email, $apiToken, $password);
         
         $this->assertEquals(201, $client->getResponse()->getStatusCode());
     }
@@ -80,18 +94,10 @@ class UserRepositoryTest extends WebTestCase
     {
         $client = static::createClient();
 
-        extract($this->createRandomUser());
+        extract(UserHelper::createRandomUser());
 
-        $client->request(
-            'POST',
-            '/register',
-            [
-                'api_token' => $apiToken,
-                'email' =>  $email,
-                'password' => $password,
-            ]
-        );
-
+        UserHelper::registerUser($client, $email, $apiToken, $password);
+        
         // second request with same credentials
         $client->request(
             'POST',
@@ -113,7 +119,7 @@ class UserRepositoryTest extends WebTestCase
         $client->request('POST', '/register', [], [], [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_X-Requested-With' => 'XMLHttpRequest'
-        ], json_encode($this->createRandomUser()));
+        ], json_encode(UserHelper::createRandomUser()));
 
         $this->assertEquals(201, $client->getResponse()->getStatusCode());
     }
@@ -122,7 +128,7 @@ class UserRepositoryTest extends WebTestCase
     {
         $client = static::createClient();
 
-        $client->request('POST', '/register', $this->createRandomUser(), [], [
+        $client->request('POST', '/register', UserHelper::createRandomUser(), [], [
             'HTTP_X-Requested-With' => 'XMLHttpRequest'
         ]);
 
@@ -133,17 +139,11 @@ class UserRepositoryTest extends WebTestCase
     {
         $client = static::createClient();
 
-        extract($this->createRandomUser());
+        extract(UserHelper::createRandomUser());
 
-        $client->request(
-            'POST',
-            '/register',
-            [
-                'api_token' => $apiToken,
-                'email' =>  $email,
-                'password' => $password,
-            ]
-        );
+        UserHelper::registerUser($client, $email, $apiToken, $password);
+
+        UserHelper::loginUser($client, $email, $password);
 
         $testImagePath = $client->getKernel()->getContainer()->getParameter('image_test');
         
@@ -179,16 +179,5 @@ class UserRepositoryTest extends WebTestCase
         $data = json_decode($client->getResponse()->getContent(), true);
         
         $this->assertEquals(2, count($data['images']));
-    }
-
-    private function createRandomUser() : array
-    {
-        $apiToken = bin2hex(random_bytes(32));
-        $password = bin2hex(random_bytes(32));
-        $randomNumber = rand(0, 100000);
-        $name = bin2hex(random_bytes(10));
-        $email = $name . '-' . $randomNumber . '.yolo@gmail.com';
-
-        return ['email' => $email, 'password' => $password, 'apiToken' => $apiToken];
     }
 }

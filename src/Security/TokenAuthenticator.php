@@ -3,6 +3,8 @@
 namespace App\Security;
 
 use App\Entity\User;
+use App\Security\UserSession;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,14 +14,24 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class TokenAuthenticator extends AbstractGuardAuthenticator
 {
     private $em;
 
-    public function __construct(EntityManagerInterface $em)
+    private $session;
+
+    private $encoder;
+
+    public function __construct(EntityManagerInterface $em, SessionInterface $session, RouterInterface $router, UserPasswordEncoderInterface $encoder)
     {
         $this->em = $em;
+        $this->session = $session;
+        $this->router  = $router;
+        $this->encoder = $encoder;
     }
 
     /**
@@ -29,7 +41,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return $request->headers->has('X-AUTH-TOKEN');
+        return $request->headers->has('X-AUTH-TOKEN') || $this->session->get('userInfo');
     }
 
     /**
@@ -38,7 +50,10 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
-        return $request->headers->get('X-AUTH-TOKEN');
+        return [
+            'apiToken' => $request->headers->get('X-AUTH-TOKEN'),
+            'userInfo' => $this->session->get('userInfo')
+        ];
     }
 
     public function getUser($credentials, UserProviderInterface $userProvider)
@@ -49,19 +64,43 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
             return null;
         }
 
-        // if a User is returned, checkCredentials() is called
-        return $this->em->getRepository(User::class)
-            ->findOneBy(['apiToken' => $credentials])
-        ;
+        $user = $this->em->getRepository(User::class)
+        ->findOneBy(['apiToken' => $credentials['apiToken']]);
+
+        if (!$user && $credentials['userInfo'])  {
+            $user = $this->em->getRepository(User::class)
+            ->findOneBy(['email' => $credentials['userInfo']->getEmail()]);
+
+            if (!$user) return null;
+
+            if (time() > $credentials['userInfo']->getExpireAt()) {
+                return null;
+            }
+
+            $isAuth = hash_equals($user->getPassword(), $credentials['userInfo']->getToken());
+        
+            if (!$isAuth) return null;
+        }
+
+        return $user;
     }
 
     public function checkCredentials($credentials, UserInterface $user)
     {
         // Check credentials - e.g. make sure the password is valid.
         // In case of an API token, no credential check is needed.
-        // $user->getRoles();
+
+        /*if (!array_key_exists('userInfo', $credentials) || !$credentials['userInfo'] instanceof UserSession) {
+            return false;   
+        }
+        
+        // max token lifetime is 1 week.
+        if (time() > $credentials['userInfo']->getExpireAt()) {
+            return false;
+        }*/
 
         // Return `true` to cause authentication success
+        // return hash_equals($user->getPassword(), $credentials['userInfo']->getToken());
         return true;
     }
 
@@ -69,7 +108,6 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     {
         // on success, let the request continue
 
-        // api proxy : redirect.
         return null;
     }
 

@@ -5,9 +5,10 @@ register:
 
 login:
   path: /login
-  controller: App\Controller\UserController::login
+  controller: App\Controller\RegistrationController::login
   methods: POST
 
 logout:
   path: /logout
+  controller: App\Controller\RegistrationController::logout
   methods: GET
