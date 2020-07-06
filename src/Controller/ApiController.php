@@ -50,7 +50,7 @@ class ApiController extends AbstractController
     /**
      * @Route("/api/image/upload", name="upload_image")
      */
-    public function uploadImage(Request $request, ValidatorInterface $validator): Response
+    public function uploadImage(Request $request, ValidatorInterface $validator): JsonResponse
     {
         $imageData = $request->request->get('base64_image');
         $apiToken = $request->headers->get('X-AUTH-TOKEN');
@@ -58,7 +58,7 @@ class ApiController extends AbstractController
         $extension = $request->request->get('extension');
 
         if (!$imageData || !$apiToken) {
-            return new Response('Bad request.', Response::HTTP_BAD_REQUEST);
+            return new JsonResponse('Bad request.', Response::HTTP_BAD_REQUEST);
         }
 
         $entityManager = $this->getDoctrine()->getManager();
@@ -67,7 +67,7 @@ class ApiController extends AbstractController
         ->findOneBy(['apiToken' => $apiToken]);
 
         if (!$user) {
-            return new Response('Bad request.', Response::HTTP_BAD_REQUEST);
+            return new JsonResponse('Bad request.', Response::HTTP_BAD_REQUEST);
         }
 
         $userId = $user->getId();
@@ -100,7 +100,11 @@ class ApiController extends AbstractController
 
         $entityManager->flush();
 
-        return new Response('OK', Response::HTTP_OK);
+        return new JsonResponse([
+            'name' => $imageModel->getName(),
+            'path' => $imageModel->getPath(),
+            'id' => $imageModel->getId()
+        ], Response::HTTP_OK);
     }
 
     /**
@@ -132,5 +136,71 @@ class ApiController extends AbstractController
         }
 
         return new JsonResponse(['email' => $user->getEmail(), 'images' => $imgResult, 'id' => $user->getId()], 200);
+    }
+
+    /**
+     * @Route("/api/image/delete", name="delete_image")
+     */
+    public function deleteImage(Request $request, ValidatorInterface $validator) : JsonResponse
+    {
+        $email = $request->request->get('email');
+        $imageId = $request->request->get('img_id');
+
+        if (!$email) {
+            return new JsonResponse(['error' => 'Delete image error.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $user = $entityManager
+        ->getRepository(User::class)
+        ->findOneBy(['email' => $email]);
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Delete image error.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $deletedImage = [];
+        $i = 0;
+        if (is_array($imageId)) {
+            foreach ($imageId as $id) {
+                foreach ($user->getImages() as $image)
+                {
+                    if ($image->getId() == $id) {
+                        $user->removeImage($image);
+                        $entityManager->remove($image);
+                        if (file_exists($image->getPath())) unlink($image->getPath());
+                        $deletedImage[$i]['path'] = $image->getPath();
+                        $deletedImage[$i]['name'] = $image->getName();
+                        $deletedImage[$i]['id'] = $image->getId();
+                        $i++;
+                    }
+                }
+            }
+        } else {
+        /*
+            $image = $entityManager
+            ->getRepository(User::class)
+            ->findOneBy(['id' => $imageId]);
+            $user->removeImage($image);
+            $entityManager->remove($image);
+            if (file_exists($image->getPath())) unlink($image->getPath());
+        */
+            foreach ($user->getImages() as $image)
+            {
+                if ($imageId == $image->getId()) {
+                    $user->removeImage($image);
+                    $entityManager->remove($image);
+                    if (file_exists($image->getPath())) unlink($image->getPath());
+                    $deletedImage[$i]['path'] = $image->getPath();
+                    $deletedImage[$i]['name'] = $image->getName();
+                    $deletedImage[$i]['id'] = $image->getId();
+                    $i++;
+                }
+            }
+        }
+
+        $entityManager->flush();
+
+        return new JsonResponse($deletedImage, Response::HTTP_OK);
     }
 }

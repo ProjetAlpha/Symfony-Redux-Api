@@ -11,3 +11,9 @@ upload_image:
 search_image:
   path: /api/image/search
   controller: App\Controller\ApiController::searchImages
+  methods: POST
+
+delete_image:
+  path: /api/image/delete
+  controller: App\Controller\ApiController::deleteImage
+  methods: DELETE
