@@ -21,4 +21,4 @@ install:
     - php bin/console doctrine:schema:create --env=travis
     # - php bin/console doctrine:fixtures:load -n --env=travis
 script:
-    - ./vendor/bin/simple-phpunit --coverage-text --colors
+    - ./vendor/bin/simple-phpunit --coverage-text --colors --verbose
