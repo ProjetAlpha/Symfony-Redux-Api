@@ -12,6 +12,7 @@ php:
 
 # Update composer
 before-install:
+    - sudo apt-get -y install mailutils
     - mysql -e 'CREATE DATABASE IF NOT EXISTS test;'
     - composer self-update
   
@@ -19,6 +20,9 @@ install:
     - composer install --prefer-dist --no-interaction
     - php bin/console doctrine:database:create --env=travis --if-not-exists
     - php bin/console doctrine:schema:create --env=travis
+    #  production env :
+    # - php bin/console make:migration
+    # - php bin/console doctrine:migrations:migrate
     # - php bin/console doctrine:fixtures:load -n --env=travis
 script:
     - ./vendor/bin/simple-phpunit --coverage-text --colors --verbose
