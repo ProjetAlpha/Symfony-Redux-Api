@@ -13,7 +13,6 @@ php:
 # Update composer
 before-install:
     - mysql -e 'CREATE DATABASE IF NOT EXISTS test;'
-    - echo "USE mysql;\nUPDATE user SET password=PASSWORD('') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
     - composer self-update
   
 install:
