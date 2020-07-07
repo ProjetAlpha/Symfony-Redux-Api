@@ -28,4 +28,4 @@ script:
     - ./vendor/bin/simple-phpunit --coverage-text --colors --verbose
   
 after_failure:
-  - echo ./var/log/test.log | mail -s "Travis failure symfony report" thomas.broussoux@gmail.com
+  - cat ./var/log/test.log
