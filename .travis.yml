@@ -11,14 +11,14 @@ php:
     - 7.2
   
 env:
-  - DB_PWD=./getEnvVar .env.test DB_PWD
-  - DB_NAME=./getEnvVar .env.test DB_NAME
-  - DB_USER=./getEnvVar .env.test DB_USER
+  - DB_PWD=sh getEnvVar.sh .env.travis DB_PWD
+  - DB_NAME=sh getEnvVar.sh .env.travis DB_NAME
+  - DB_USER=sh getEnvVar.sh .env.travis DB_USER
 
 # Update composer
 before-install:
-    - mysql -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO 'travis'@'localhost'%'"
-    - mysql -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PWD}';"
+    - mysql -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL ON ${DB_NAME}.* TO 'travis'@'localhost'%'"
+    - mysql -e "GRANT ALL ON ${DB_NAME}.* TO '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PWD}';"
     - composer self-update
   
 install:
