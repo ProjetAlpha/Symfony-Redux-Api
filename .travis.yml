@@ -12,12 +12,14 @@ php:
 
 # Update composer
 before-install:
+    - mysql -e 'CREATE DATABASE IF NOT EXISTS test;'
+    - echo "USE mysql;\nUPDATE user SET password=PASSWORD('') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
     - composer self-update
   
 install:
     - composer install --prefer-dist --no-interaction
     - php bin/console doctrine:database:create --env=test
-    - php bin/console doctrine:schema:update --force --env=test
+    - php bin/console doctrine:schema:create --env=test
     - php bin/console doctrine:fixtures:load -n --env=test
 script:
     - ./vendor/bin/simple-phpunit --coverage-text --colors
