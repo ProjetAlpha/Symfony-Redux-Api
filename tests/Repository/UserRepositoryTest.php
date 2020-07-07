@@ -73,6 +73,8 @@ class UserRepositoryTest extends WebTestCase
         // check json response
         $this->assertEquals('application/json', $client->getResponse()->headers->get('content-type'));
 
+        $this->assertJson($client->getResponse()->getContent());
+
         $data = json_decode($client->getResponse()->getContent(), true);
 
         $this->assertArrayHasKey('api_token', $data);
@@ -176,8 +178,10 @@ class UserRepositoryTest extends WebTestCase
             'HTTP_X-Requested-With' => 'XMLHttpRequest'
         ]);
 
+        $this->assertJson($client->getResponse()->getContent());
+
         $data = json_decode($client->getResponse()->getContent(), true);
-        
+
         $this->assertEquals(2, count($data['images']));
     }
 }
