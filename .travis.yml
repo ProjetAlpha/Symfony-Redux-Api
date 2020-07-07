@@ -12,7 +12,6 @@ php:
 
 # Update composer
 before-install:
-    - chmod 750 getEnvVar.sh && ./getEnvVar .env.travis DB_PWD && /getEnvVar .env.travis DB_NAME && ./getEnvVar .env.travis DB_USER
     - mysql -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL ON ${DB_NAME}.* TO 'travis'@'localhost'%'"
     - mysql -e "GRANT ALL ON ${DB_NAME}.* TO '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PWD}';"
     - composer self-update
