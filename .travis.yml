@@ -11,8 +11,6 @@ php:
     - 7.2
 
 before-install:
-    # modify phpunit.xml.dist APP_ENV value with "travis"
-    - php TravisPhpUnitSetup.php
     - mysql -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL ON ${DB_NAME}.* TO 'travis'@'localhost' IDENTIFIED BY '${DB_PWD}';"
     - mysql -e "GRANT ALL ON ${DB_NAME}.* TO '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PWD}';"
     - composer self-update
@@ -26,6 +24,8 @@ install:
     # - php bin/console doctrine:migrations:migrate
     # - php bin/console doctrine:fixtures:load -n --env=travis
 script:
+    # modify phpunit.xml.dist APP_ENV value with "travis"
+    - php TravisPhpUnitSetup.php
     - ./vendor/bin/simple-phpunit --coverage-text --colors --verbose
   
 # print php logs
