@@ -15,6 +15,10 @@ if (file_exists('phpunit.xml.dist')) {
         exit ("Parsing error : unexpected APP_ENV value. Support 'test', 'dev' and 'prod'.");
     }
     
+    // TODO: create a specific env for travis tests.
+    // 1 - create .env.travis (copy .env.test)
+    // 2 - create config package/travis (copy config/package/test + set bundle.php)
+
     $xml->save('phpunit.xml.dist');
     echo "############# TRAVIS TEST ENVIRONMENT SETUP - SUCESS #############";
 } else {
