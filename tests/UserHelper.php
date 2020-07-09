@@ -6,6 +6,11 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class UserHelper extends WebTestCase
 {
+    /**
+     * Create a true random user.
+     *
+     * @return array
+     */
     public static function createRandomUser() : array
     {
         $apiToken = bin2hex(random_bytes(32));
@@ -17,6 +22,15 @@ class UserHelper extends WebTestCase
         return ['email' => $email, 'password' => $password, 'apiToken' => $apiToken];
     }
 
+    /**
+     * Register a generated user and test if a user is registered successfully.
+     *
+     * @param \Symfony\Bundle\FrameworkBundle\Test\WebTestCase::createClient $client
+     * @param string $email
+     * @param string $apiToken
+     * @param string $password
+     * @return void
+     */
     public static function registerUser($client, $email, $apiToken, $password)
     {
         $client->request(
@@ -32,6 +46,14 @@ class UserHelper extends WebTestCase
         static::assertEquals(201, $client->getResponse()->getStatusCode());
     }
 
+    /**
+     * Log a generated user and test if a user is logged in successfully.
+     *
+     * @param [string] $client
+     * @param [string] $email
+     * @param [string] $password
+     * @return void
+     */
     public static function loginUser($client, $email, $password)
     {
         $client->request(

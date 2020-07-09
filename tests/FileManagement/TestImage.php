@@ -7,12 +7,47 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class TestImage
 {
+    /**
+     * Symfony UploadedFile container.
+     *
+     * @var Symfony\Component\HttpFoundation\File\UploadedFile
+     */
     private $data;
+    
+    /**
+     * Image's directory.
+     *
+     * @var string
+     */
     private $path;
+    
+    /**
+     * Image's directory name.
+     *
+     * @var string
+     */
     private $name;
+    
+    /**
+     * Image's size.
+     *
+     * @var string
+     */
     private $size;
+    
+    /**
+     * Image's extension.
+     *
+     * @var [type]
+     */
     private $extension;
 
+    /**
+     * Find a random image if an image file exist.
+     *
+     * @param [type] $path
+     * @param boolean $isRandom
+     */
     public function __construct($path, $isRandom = false)
     {
         if (!file_exists($path) && !$isRandom) {
@@ -37,6 +72,12 @@ class TestImage
         }
     }
 
+    /**
+     * Get a random image from a target directory.
+     *
+     * @param string $path
+     * @return string
+     */
     private function getRandomImage($path): string
     {
         if (!file_exists($path) || !is_dir($path)) {

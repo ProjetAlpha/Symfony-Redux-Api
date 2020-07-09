@@ -9,6 +9,11 @@ use App\Tests\UserHelper;
 
 class UserRepositoryTest extends WebTestCase
 {
+    /**
+     * Test if an api user has a valid api token.
+     *
+     * @return void
+     */
     public function testUnauthoriziedApiUser()
     {
         $client = static::createClient();
@@ -23,6 +28,11 @@ class UserRepositoryTest extends WebTestCase
         $this->assertEquals(401, $client->getResponse()->getStatusCode());
     }
 
+    /**
+     * Test if a standard user is authenticated.
+     *
+     * @return void
+     */
     public function testIfUserIsNOTAuthenticated()
     {
         $client = static::createClient();
@@ -39,6 +49,11 @@ class UserRepositoryTest extends WebTestCase
         $this->assertEquals(401, $client->getResponse()->getStatusCode());
     }
 
+    /**
+     * Test if an unauthorized user has access to api endpoints.
+     *
+     * @return void
+     */
     public function testIfUserWithoutAuthentificationStrategieIsUnauthorized()
     {
         $client = static::createClient();
@@ -53,6 +68,11 @@ class UserRepositoryTest extends WebTestCase
         $this->assertEquals(401, $client->getResponse()->getStatusCode());
     }
 
+    /**
+     * Test if an api user has a valid api token.
+     *
+     * @return void
+     */
     public function testAuthoriziedApiUser()
     {
         $client = static::createClient();
@@ -81,7 +101,12 @@ class UserRepositoryTest extends WebTestCase
         $this->assertEquals($email, $data['email']);
     }
 
-    public function testBasicUserRegister()
+    /**
+     * Test if a standard user has a valid authentification token.
+     *
+     * @return void
+     */
+    public function testStandardUserRegister()
     {
         $client = static::createClient();
 
@@ -92,6 +117,11 @@ class UserRepositoryTest extends WebTestCase
         $this->assertEquals(201, $client->getResponse()->getStatusCode());
     }
 
+    /**
+     * Test if a user email already exist.
+     *
+     * @return void
+     */
     public function testIfUserHasUniqueEmail()
     {
         $client = static::createClient();
@@ -114,6 +144,11 @@ class UserRepositoryTest extends WebTestCase
         $this->assertEquals(400, $client->getResponse()->getStatusCode());
     }
 
+    /**
+     * Test if api support JSON body request.
+     *
+     * @return void
+     */
     public function testJsonBodyRequestRegister()
     {
         $client = static::createClient();
@@ -126,6 +161,11 @@ class UserRepositoryTest extends WebTestCase
         $this->assertEquals(201, $client->getResponse()->getStatusCode());
     }
 
+    /**
+     * Test if api support JSON parameters.
+     *
+     * @return void
+     */
     public function testJsonParametersRequestRegister()
     {
         $client = static::createClient();
@@ -137,6 +177,11 @@ class UserRepositoryTest extends WebTestCase
         $this->assertEquals(201, $client->getResponse()->getStatusCode());
     }
 
+    /**
+     * Test if a user has and can upload multiple images.
+     *
+     * @return void
+     */
     public function testIfOneUserHasUploadedImages()
     {
         $client = static::createClient();

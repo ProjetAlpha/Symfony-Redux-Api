@@ -8,6 +8,11 @@ use App\Tests\FileManagement\TestImage;
 
 class DeleteFileTest extends WebTestCase
 {
+    /**
+     * Test if an api user can delete image.
+     *
+     * @return void
+     */
     public function testApiImageDelete()
     {
         $client = static::createClient();
@@ -49,6 +54,11 @@ class DeleteFileTest extends WebTestCase
         $this->assertFalse(file_exists($data[0]['path']));
     }
 
+    /**
+     * Test if a standard user can delete image.
+     *
+     * @return void
+     */
     public function testUserImageDelete()
     {
         $client = static::createClient();
