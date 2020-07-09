@@ -68,6 +68,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
         ->findOneBy(['apiToken' => $credentials['apiToken']]);
 
         if (!$user && $credentials['userInfo'])  {
+            
             $user = $this->em->getRepository(User::class)
             ->findOneBy(['email' => $credentials['userInfo']->getEmail()]);
 
@@ -90,17 +91,6 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
         // Check credentials - e.g. make sure the password is valid.
         // In case of an API token, no credential check is needed.
 
-        /*if (!array_key_exists('userInfo', $credentials) || !$credentials['userInfo'] instanceof UserSession) {
-            return false;   
-        }
-        
-        // max token lifetime is 1 week.
-        if (time() > $credentials['userInfo']->getExpireAt()) {
-            return false;
-        }*/
-
-        // Return `true` to cause authentication success
-        // return hash_equals($user->getPassword(), $credentials['userInfo']->getToken());
         return true;
     }
 

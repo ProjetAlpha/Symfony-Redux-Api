@@ -4,14 +4,39 @@ namespace App\Security;
 
 class UserSession 
 {
+    /**
+     * Tell if a user is currently logged in.
+     *
+     * @var bool
+     */
     private $isLoggedIn;
 
+    /**
+     * User id.
+     *
+     * @var int
+     */
     private $id;
 
+    /**
+     * User email.
+     *
+     * @var string
+     */
     private $email;
 
+    /**
+     * Token hash.
+     *
+     * @var string
+     */
     private $token;
 
+    /**
+     * Token timestamp expiration.
+     *
+     * @var int
+     */
     private $expireAt;
 
     public function __construct()
