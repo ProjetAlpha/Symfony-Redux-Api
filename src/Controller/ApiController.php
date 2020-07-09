@@ -53,18 +53,19 @@ class ApiController extends AbstractController
     public function uploadImage(Request $request, ValidatorInterface $validator): JsonResponse
     {
         $imageData = $request->request->get('base64_image');
+        $email = $request->request->get('email');
         $apiToken = $request->headers->get('X-AUTH-TOKEN');
         $name = $request->request->get('name');
         $extension = $request->request->get('extension');
 
-        if (!$imageData || !$apiToken) {
+        if (!$imageData || !$apiToken && !$email) {
             return new JsonResponse('Bad request.', Response::HTTP_BAD_REQUEST);
         }
 
         $entityManager = $this->getDoctrine()->getManager();
-        $user = $entityManager
-        ->getRepository(User::class)
-        ->findOneBy(['apiToken' => $apiToken]);
+        $user = $entityManager->getRepository(User::class);
+
+        $user = $apiToken ? $user->findOneBy(['apiToken' => $apiToken]) : $user->findOneBy(['email' => $email]);
 
         if (!$user) {
             return new JsonResponse('Bad request.', Response::HTTP_BAD_REQUEST);
@@ -113,15 +114,16 @@ class ApiController extends AbstractController
     public function searchImages(Request $request, ValidatorInterface $validator): JsonResponse
     {
         $apiToken = $request->headers->get('X-AUTH-TOKEN');
+        $email = $request->request->get('email');
 
-        if (!$apiToken) {
+        if (!$apiToken && !$email) {
             return new JsonResponse(['data' => 'bad request'], 404);
         }
 
         $entityManager = $this->getDoctrine()->getManager();
-        $user = $entityManager
-        ->getRepository(User::class)
-        ->findOneBy(['apiToken' => $apiToken]);
+        $user = $entityManager->getRepository(User::class);
+
+        $user = $apiToken ? $user->findOneBy(['apiToken' => $apiToken]) : $user->findOneBy(['email' => $email]);
 
         if (!$user) {
             return new JsonResponse(['data' => 'bad request'], 404);
