@@ -2,9 +2,8 @@
 
 namespace App\Tests\FileManagement;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use App\Tests\UserHelper;
-use App\Tests\FileManagement\TestImage;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class DeleteFileTest extends WebTestCase
 {
@@ -32,12 +31,12 @@ class DeleteFileTest extends WebTestCase
         $client->request('POST', '/api/image/upload', [
             'base64_image' => $base64Image,
             'name' => $image->getName(),
-            'extension' => $image->getExtension()
+            'extension' => $image->getExtension(),
         ], [], [
             'HTTP_X-Requested-With' => 'XMLHttpRequest',
-            'HTTP_X-AUTH-TOKEN' => $apiToken
+            'HTTP_X-AUTH-TOKEN' => $apiToken,
         ]);
-        
+
         // check if file is in DB & is uploaded.
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $this->assertJson($client->getResponse()->getContent());
@@ -48,7 +47,7 @@ class DeleteFileTest extends WebTestCase
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $this->assertJson($client->getResponse()->getContent());
-        
+
         $data = json_decode($client->getResponse()->getContent(), true);
 
         $this->assertFalse(file_exists($data[0]['path']));
@@ -80,12 +79,12 @@ class DeleteFileTest extends WebTestCase
         $client->request('POST', '/api/image/upload', [
             'base64_image' => $base64Image,
             'name' => $image->getName(),
-            'extension' => $image->getExtension()
+            'extension' => $image->getExtension(),
         ], [], [
             'HTTP_X-Requested-With' => 'XMLHttpRequest',
-            'HTTP_X-AUTH-TOKEN' => $apiToken
+            'HTTP_X-AUTH-TOKEN' => $apiToken,
         ]);
-        
+
         // check if file is in DB & is uploaded.
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $this->assertJson($client->getResponse()->getContent());
@@ -96,7 +95,7 @@ class DeleteFileTest extends WebTestCase
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $this->assertJson($client->getResponse()->getContent());
-        
+
         $data = json_decode($client->getResponse()->getContent(), true);
 
         $this->assertFalse(file_exists($data[0]['path']));

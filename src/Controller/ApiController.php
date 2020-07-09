@@ -2,16 +2,15 @@
 
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
-
-use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use App\Entity\User;
 use App\Entity\Image;
-use Symfony\Component\HttpFoundation\Response;
+use App\Entity\User;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ApiController extends AbstractController
 {
@@ -32,7 +31,7 @@ class ApiController extends AbstractController
     {
         $apiToken = $request->headers->get('X-AUTH-TOKEN');
 
-        if ($apiToken == null) {
+        if (null == $apiToken) {
             return new JsonResponse(['data' => 'bad request'], 404);
         }
 
@@ -40,7 +39,7 @@ class ApiController extends AbstractController
         ->getRepository(User::class)
         ->findOneBy(['apiToken' => $apiToken]);
 
-        if ($user == null) {
+        if (null == $user) {
             return new JsonResponse(['data' => 'bad request'], 404);
         }
 
@@ -73,19 +72,19 @@ class ApiController extends AbstractController
 
         $userId = $user->getId();
         $bin = base64_decode($imageData);
-        $im = imageCreateFromString($bin);
+        $im = imagecreatefromstring($bin);
 
         if (!$im) {
             return new Response('Internal error.', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        $userDirectory = $this->getParameter('upload_image_dir') . $userId;
+        $userDirectory = $this->getParameter('upload_image_dir').$userId;
 
         if (!is_dir($userDirectory)) {
             mkdir($userDirectory, 0777, true);
         }
 
-        $destination = $userDirectory . '/' . $name . '-' . uniqid() . '.' . $extension;
+        $destination = $userDirectory.'/'.$name.'-'.uniqid().'.'.$extension;
 
         imagepng($im, $destination, 0);
         imagedestroy($im);
@@ -104,7 +103,7 @@ class ApiController extends AbstractController
         return new JsonResponse([
             'name' => $imageModel->getName(),
             'path' => $imageModel->getPath(),
-            'id' => $imageModel->getId()
+            'id' => $imageModel->getId(),
         ], Response::HTTP_OK);
     }
 
@@ -143,7 +142,7 @@ class ApiController extends AbstractController
     /**
      * @Route("/api/image/delete", name="delete_image")
      */
-    public function deleteImage(Request $request, ValidatorInterface $validator) : JsonResponse
+    public function deleteImage(Request $request, ValidatorInterface $validator): JsonResponse
     {
         $email = $request->request->get('email');
         $imageId = $request->request->get('img_id');
@@ -165,38 +164,40 @@ class ApiController extends AbstractController
         $i = 0;
         if (is_array($imageId)) {
             foreach ($imageId as $id) {
-                foreach ($user->getImages() as $image)
-                {
+                foreach ($user->getImages() as $image) {
                     if ($image->getId() == $id) {
                         $user->removeImage($image);
                         $entityManager->remove($image);
-                        if (file_exists($image->getPath())) unlink($image->getPath());
+                        if (file_exists($image->getPath())) {
+                            unlink($image->getPath());
+                        }
                         $deletedImage[$i]['path'] = $image->getPath();
                         $deletedImage[$i]['name'] = $image->getName();
                         $deletedImage[$i]['id'] = $image->getId();
-                        $i++;
+                        ++$i;
                     }
                 }
             }
         } else {
-        /*
-            $image = $entityManager
-            ->getRepository(User::class)
-            ->findOneBy(['id' => $imageId]);
-            $user->removeImage($image);
-            $entityManager->remove($image);
-            if (file_exists($image->getPath())) unlink($image->getPath());
-        */
-            foreach ($user->getImages() as $image)
-            {
+            /*
+                $image = $entityManager
+                ->getRepository(User::class)
+                ->findOneBy(['id' => $imageId]);
+                $user->removeImage($image);
+                $entityManager->remove($image);
+                if (file_exists($image->getPath())) unlink($image->getPath());
+            */
+            foreach ($user->getImages() as $image) {
                 if ($imageId == $image->getId()) {
                     $user->removeImage($image);
                     $entityManager->remove($image);
-                    if (file_exists($image->getPath())) unlink($image->getPath());
+                    if (file_exists($image->getPath())) {
+                        unlink($image->getPath());
+                    }
                     $deletedImage[$i]['path'] = $image->getPath();
                     $deletedImage[$i]['name'] = $image->getName();
                     $deletedImage[$i]['id'] = $image->getId();
-                    $i++;
+                    ++$i;
                 }
             }
         }

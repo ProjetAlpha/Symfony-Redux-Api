@@ -2,9 +2,8 @@
 
 namespace App\Tests\FileManagement;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use App\Tests\FileManagement\TestImage;
 use App\Tests\UserHelper;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /*
     -- Api request support test :
@@ -44,9 +43,9 @@ class UploadFileTest extends WebTestCase
         $client->request('POST', '/api/image/upload', [
             'base64_image' => $base64Image,
             'name' => $image->getName(),
-            'extension' => $image->getExtension()
+            'extension' => $image->getExtension(),
         ], [], [
-            'HTTP_X-Requested-With' => 'XMLHttpRequest'
+            'HTTP_X-Requested-With' => 'XMLHttpRequest',
         ]);
 
         // unauthorized response code
@@ -62,11 +61,11 @@ class UploadFileTest extends WebTestCase
     {
         $client = static::createClient();
 
-         // create a random user
-         extract(UserHelper::createRandomUser());
+        // create a random user
+        extract(UserHelper::createRandomUser());
 
         UserHelper::registerUser($client, $email, $apiToken, $password);
-        
+
         // api accepts base64image upload
         $testImagePath = $client->getKernel()->getContainer()->getParameter('image_test');
         $image = new TestImage($testImagePath, true);
@@ -77,7 +76,7 @@ class UploadFileTest extends WebTestCase
             'base64_image' => $base64Image,
             'name' => $image->getName(),
             'extension' => $image->getExtension(),
-            'email' => $email
+            'email' => $email,
         ], [], []);
 
         // unauthorized response code
@@ -115,12 +114,12 @@ class UploadFileTest extends WebTestCase
         $client->request('POST', '/api/image/upload', [
             'base64_image' => $base64Image,
             'name' => $image->getName(),
-            'extension' => $image->getExtension()
+            'extension' => $image->getExtension(),
         ], [], [
             'HTTP_X-Requested-With' => 'XMLHttpRequest',
-            'HTTP_X-AUTH-TOKEN' => $apiToken
+            'HTTP_X-AUTH-TOKEN' => $apiToken,
         ]);
-        
+
         // check if file is in DB & is uploaded.
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
     }
@@ -154,9 +153,9 @@ class UploadFileTest extends WebTestCase
             'base64_image' => $base64Image,
             'name' => $image->getName(),
             'extension' => $image->getExtension(),
-            'email' => $email
+            'email' => $email,
         ], [], []);
-        
+
         // check if file is in DB & is uploaded.
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
     }

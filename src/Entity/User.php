@@ -13,10 +13,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class User implements UserInterface
 {
     /**
-    * @ORM\Column(type="string", unique=true, nullable=true)
-    */
+     * @ORM\Column(type="string", unique=true, nullable=true)
+     */
     private $apiToken;
-    
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -114,7 +114,7 @@ class User implements UserInterface
     public function setApiToken(string $apiToken): self
     {
         $this->apiToken = $apiToken;
-        
+
         return $this;
     }
 

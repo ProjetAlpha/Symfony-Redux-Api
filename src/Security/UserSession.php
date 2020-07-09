@@ -2,7 +2,7 @@
 
 namespace App\Security;
 
-class UserSession 
+class UserSession
 {
     /**
      * Tell if a user is currently logged in.
@@ -41,30 +41,29 @@ class UserSession
 
     public function __construct()
     {
-        
     }
 
-    public function getIsLoggedIn() : bool
+    public function getIsLoggedIn(): bool
     {
         return $this->isLoggedIn;
     }
 
-    public function getId() : int 
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getEmail() : string
+    public function getEmail(): string
     {
         return $this->email;
     }
 
-    public function getToken() : string
+    public function getToken(): string
     {
         return $this->token;
     }
 
-    public function getExpireAt() : int
+    public function getExpireAt(): int
     {
         return $this->expireAt;
     }

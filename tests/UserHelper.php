@@ -8,16 +8,14 @@ class UserHelper extends WebTestCase
 {
     /**
      * Create a true random user.
-     *
-     * @return array
      */
-    public static function createRandomUser() : array
+    public static function createRandomUser(): array
     {
         $apiToken = bin2hex(random_bytes(32));
         $password = bin2hex(random_bytes(32));
         $randomNumber = rand(0, 100000);
         $name = bin2hex(random_bytes(10));
-        $email = $name . '-' . $randomNumber . '.yolo@gmail.com';
+        $email = $name.'-'.$randomNumber.'.yolo@gmail.com';
 
         return ['email' => $email, 'password' => $password, 'apiToken' => $apiToken];
     }
@@ -26,9 +24,10 @@ class UserHelper extends WebTestCase
      * Register a generated user and test if a user is registered successfully.
      *
      * @param \Symfony\Bundle\FrameworkBundle\Test\WebTestCase::createClient $client
-     * @param string $email
-     * @param string $apiToken
-     * @param string $password
+     * @param string                                                         $email
+     * @param string                                                         $apiToken
+     * @param string                                                         $password
+     *
      * @return void
      */
     public static function registerUser($client, $email, $apiToken, $password)
@@ -52,6 +51,7 @@ class UserHelper extends WebTestCase
      * @param [string] $client
      * @param [string] $email
      * @param [string] $password
+     *
      * @return void
      */
     public static function loginUser($client, $email, $password)
@@ -60,11 +60,11 @@ class UserHelper extends WebTestCase
             'POST',
             '/login',
             [
-                'email' =>  $email,
+                'email' => $email,
                 'password' => $password,
             ]
         );
-         
+
         static::assertEquals(200, $client->getResponse()->getStatusCode());
     }
 }
