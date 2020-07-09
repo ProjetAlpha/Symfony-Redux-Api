@@ -1,0 +1,40 @@
+language: php
+sudo: false
+cache:
+    directories:
+        - $HOME/.composer/cache
+        - $HOME/symfony-bridge/.phpunit
+warnings_are_errors: false
+services:
+    - mysql
+php:
+    - 7.2
+
+before-install:
+    - mysql -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL ON ${DB_NAME}.* TO 'travis'@'localhost' IDENTIFIED BY '${DB_PWD}';"
+    - mysql -e "GRANT ALL ON ${DB_NAME}.* TO '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PWD}';"
+    - composer self-update
+
+install:
+    - composer install --prefer-dist --no-interaction --no-progress --no-suggest
+    - php bin/console doctrine:database:create --env=travis --if-not-exists
+    - php bin/console doctrine:schema:create --env=travis
+    #  production env :
+    # - php bin/console make:migration
+    # - php bin/console doctrine:migrations:migrate
+    # - php bin/console doctrine:fixtures:load -n --env=travis
+script:
+    # modify phpunit.xml.dist APP_ENV value with "travis"
+    - php TravisPhpUnitSetup.php
+    - ./vendor/bin/simple-phpunit --coverage-text --colors --verbose
+  
+# print php logs
+after_failure:
+  - cat ./var/log/test.log
+
+notifications:
+  email:
+    recipients:
+        - debugapplogger@gmail.com
+    on_success: never # default: change
+    on_failure: always # default: always
