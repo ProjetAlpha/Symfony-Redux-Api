@@ -24,6 +24,8 @@ install:
     # - php bin/console doctrine:migrations:migrate
     # - php bin/console doctrine:fixtures:load -n --env=travis
 script:
+    # check PSR-2 code standard on src directory
+    - php vendor/bin/phpcs --standard=psr2 src/ -n
     # modify phpunit.xml.dist APP_ENV value with "travis"
     - php TravisPhpUnitSetup.php
     - ./vendor/bin/simple-phpunit --coverage-text --colors --verbose
