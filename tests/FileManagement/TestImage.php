@@ -13,28 +13,28 @@ class TestImage
      * @var Symfony\Component\HttpFoundation\File\UploadedFile
      */
     private $data;
-    
+
     /**
      * Image's directory.
      *
      * @var string
      */
     private $path;
-    
+
     /**
      * Image's directory name.
      *
      * @var string
      */
     private $name;
-    
+
     /**
      * Image's size.
      *
      * @var string
      */
     private $size;
-    
+
     /**
      * Image's extension.
      *
@@ -46,12 +46,12 @@ class TestImage
      * Find a random image if an image file exist.
      *
      * @param [type] $path
-     * @param boolean $isRandom
+     * @param bool   $isRandom
      */
     public function __construct($path, $isRandom = false)
     {
         if (!file_exists($path) && !$isRandom) {
-           throw new FileNotFoundException();
+            throw new FileNotFoundException();
         }
 
         if ($isRandom) {
@@ -76,7 +76,6 @@ class TestImage
      * Get a random image from a target directory.
      *
      * @param string $path
-     * @return string
      */
     private function getRandomImage($path): string
     {
@@ -84,10 +83,10 @@ class TestImage
             throw new FileNotFoundException();
         }
 
-        $directoryFiles = array_values(array_diff(scandir($path), array('..', '.')));;
+        $directoryFiles = array_values(array_diff(scandir($path), ['..', '.']));
         $randomIndex = array_rand($directoryFiles, 1);
 
-        return $path . $directoryFiles[$randomIndex];
+        return $path.$directoryFiles[$randomIndex];
     }
 
     public function getImageUpload()

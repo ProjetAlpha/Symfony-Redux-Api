@@ -3,20 +3,18 @@
 namespace App\Security;
 
 use App\Entity\User;
-use App\Security\UserSession;
-
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\Routing\RouterInterface;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class TokenAuthenticator extends AbstractGuardAuthenticator
 {
@@ -30,7 +28,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     {
         $this->em = $em;
         $this->session = $session;
-        $this->router  = $router;
+        $this->router = $router;
         $this->encoder = $encoder;
     }
 
@@ -52,7 +50,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     {
         return [
             'apiToken' => $request->headers->get('X-AUTH-TOKEN'),
-            'userInfo' => $this->session->get('userInfo')
+            'userInfo' => $this->session->get('userInfo'),
         ];
     }
 
@@ -67,20 +65,23 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
         $user = $this->em->getRepository(User::class)
         ->findOneBy(['apiToken' => $credentials['apiToken']]);
 
-        if (!$user && $credentials['userInfo'])  {
-            
+        if (!$user && $credentials['userInfo']) {
             $user = $this->em->getRepository(User::class)
             ->findOneBy(['email' => $credentials['userInfo']->getEmail()]);
 
-            if (!$user) return null;
+            if (!$user) {
+                return null;
+            }
 
             if (time() > $credentials['userInfo']->getExpireAt()) {
                 return null;
             }
 
             $isAuth = hash_equals($user->getPassword(), $credentials['userInfo']->getToken());
-        
-            if (!$isAuth) return null;
+
+            if (!$isAuth) {
+                return null;
+            }
         }
 
         return $user;
@@ -105,7 +106,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     {
         $data = [
             // you may want to customize or obfuscate the message first
-            'message' => strtr($exception->getMessageKey(), $exception->getMessageData())
+            'message' => strtr($exception->getMessageKey(), $exception->getMessageData()),
 
             // or to translate this message
             // $this->translator->trans($exception->getMessageKey(), $exception->getMessageData())
@@ -115,13 +116,13 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     }
 
     /**
-     * Called when authentication is needed, but it's not sent
+     * Called when authentication is needed, but it's not sent.
      */
     public function start(Request $request, AuthenticationException $authException = null)
     {
         $data = [
             // you might translate this message
-            'message' => 'Authentication Required'
+            'message' => 'Authentication Required',
         ];
 
         return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
