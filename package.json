@@ -1,0 +1,36 @@
+{
+    "devDependencies": {
+        "@babel/preset-react": "^7.10.4",
+        "@symfony/webpack-encore": "^0.30.2",
+        "babel-jest": "^26.1.0",
+        "core-js": "^3.6.5",
+        "jest": "^26.1.0",
+        "redux-devtools-extension": "^2.13.8",
+        "regenerator-runtime": "^0.13.2",
+        "webpack-notifier": "^1.8.0"
+    },
+    "license": "UNLICENSED",
+    "private": true,
+    "scripts": {
+        "dev-server": "set PORT=8000 && encore dev-server --hot",
+        "dev": "set PORT=8000 && encore dev",
+        "watch": "set PORT=8000 && encore dev --watch",
+        "build": "encore production --progress"
+    },
+    "dependencies": {
+        "@babel/plugin-proposal-class-properties": "^7.10.4",
+        "@material-ui/core": "^4.11.0",
+        "@material-ui/icons": "^4.9.1",
+        "axios": "^0.19.2",
+        "dotenv": "^8.2.0",
+        "react": "^16.13.1",
+        "react-dom": "^16.13.1",
+        "react-redux": "^7.2.0",
+        "react-router": "^5.2.0",
+        "react-router-dom": "^5.2.0",
+        "redux": "^4.0.5",
+        "redux-thunk": "^2.3.0",
+        "semantic-ui-css": "^2.4.1",
+        "semantic-ui-react": "^0.88.2"
+    }
+}

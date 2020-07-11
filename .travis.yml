@@ -28,11 +28,15 @@ script:
     - php vendor/bin/phpcs --standard=psr2 src/ -n
     # modify phpunit.xml.dist APP_ENV value with "travis"
     - php TravisPhpUnitSetup.php
+    # - vendor/bin/phpunit --coverage-clover=coverage.xml
     - ./vendor/bin/simple-phpunit --coverage-text --colors --verbose
   
 # print php logs
 after_failure:
   - cat ./var/log/test.log
+
+# after_success:
+   # - bash <(curl -s https://codecov.io/bash)
 
 notifications:
   email:

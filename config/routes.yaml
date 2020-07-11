@@ -1,6 +1,7 @@
 index:
   path: /
   controller: App\Controller\RegistrationController::index
+  methods: GET
 
 image_routes:
   resource: './routes/ImageRouter'

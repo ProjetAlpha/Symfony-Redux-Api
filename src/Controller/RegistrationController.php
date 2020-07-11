@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Security\UserSession;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -16,13 +17,11 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class RegistrationController extends AbstractController
 {
     /**
-     * @Route("/registration", name="registration")
+     * @Route("/", name="index")
      */
     public function index()
     {
-        return $this->render('registration/index.html.twig', [
-            'controller_name' => 'RegistrationController',
-        ]);
+        return $this->render('base.html.twig');
     }
 
     /**
@@ -60,7 +59,7 @@ class RegistrationController extends AbstractController
     /**
      * @Route("/login", name="login")
      */
-    public function login(Request $request, ValidatorInterface $validator, UserPasswordEncoderInterface $encoder, SessionInterface $session): Response
+    public function login(Request $request, ValidatorInterface $validator, UserPasswordEncoderInterface $encoder, SessionInterface $session): JsonResponse
     {
         $password = $request->request->get('password');
         $email = $request->request->get('email');
@@ -71,7 +70,7 @@ class RegistrationController extends AbstractController
         ->findOneBy(['email' => $email]);
 
         if (!$user) {
-            return new Response('Login error.', Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'Authentication error.'], Response::HTTP_BAD_REQUEST);
         }
 
         if ($encoder->isPasswordValid($user, $password)) {
@@ -83,10 +82,10 @@ class RegistrationController extends AbstractController
             $userSession->setExpireAt(time() + (7 * 24 * 60 * 60));
             $session->set('userInfo', $userSession);
 
-            return new Response('Login OK.', Response::HTTP_OK);
+            return new JsonResponse(['email' => $user->getEmail(), 'id' => $user->getId()], Response::HTTP_OK);
         }
 
-        return new Response('Authenticate error.', Response::HTTP_UNAUTHORIZED);
+        return new JsonResponse(['error' => 'Authentication error.'], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
