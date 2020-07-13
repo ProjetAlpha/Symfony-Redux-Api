@@ -5,24 +5,6 @@ namespace App\Tests\FileManagement;
 use App\Tests\UserHelper;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-/*
-    -- Api request support test :
-    const MimeTypesMap = {
-            png: 'image/png',
-            gif: 'image/gif',
-            jpg: 'image/jpg',
-            jpeg: 'image/jpeg',
-            pdf: 'application/pdf',
-            mp4: 'video/mp4',
-            doc: 'application/msword',
-            docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            ppt: 'application/vnd.ms-powerpoint',
-            xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    };
-
-    -- Api request support blob file (binary file).
-*/
-
 class UploadFileTest extends WebTestCase
 {
     /**
@@ -64,7 +46,7 @@ class UploadFileTest extends WebTestCase
         // create a random user
         extract(UserHelper::createRandomUser());
 
-        UserHelper::registerUser($client, $email, $apiToken, $password);
+        UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname);
 
         // api accepts base64image upload
         $testImagePath = $client->getKernel()->getContainer()->getParameter('image_test');
@@ -95,7 +77,7 @@ class UploadFileTest extends WebTestCase
         // create a random user
         extract(UserHelper::createRandomUser());
 
-        UserHelper::registerUser($client, $email, $apiToken, $password);
+        UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname);
 
         UserHelper::loginUser($client, $email, $password);
 
@@ -136,11 +118,9 @@ class UploadFileTest extends WebTestCase
         // create a random user
         extract(UserHelper::createRandomUser());
 
-        UserHelper::registerUser($client, $email, $apiToken, $password);
+        UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname);
 
         UserHelper::loginUser($client, $email, $password);
-
-        $this->assertEquals(200, $client->getResponse()->getStatusCode());
 
         // get a random image
         $testImagePath = $client->getKernel()->getContainer()->getParameter('image_test');

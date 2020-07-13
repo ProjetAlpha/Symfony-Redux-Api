@@ -6,7 +6,12 @@ App\Entity\User:
                 - Email:
                     mode: strict
                 - NotBlank: ~
-        password: 
+            password: 
                 - NotBlank: ~
                 - Length:
                     min: 7
+            firstname:
+                - NotBlank: ~
+
+            lastname:
+                - NotBlank: ~
