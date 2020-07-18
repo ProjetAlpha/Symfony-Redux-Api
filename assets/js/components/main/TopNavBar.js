@@ -1,49 +1,76 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
-import SettingsIcon from '@material-ui/icons/Settings';
 import { Link } from 'react-router-dom';
+import { connect } from "react-redux";
+import * as Auth from '../../utils/Authentification';
+import * as UI from '../../UI/NavBar/base';
+import NavBarStyle from '../../UI/NavBar/style';
+import { logout } from '../../actions/Authentification';
+import { makeStyles, withStyles } from '@material-ui/core/styles';
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
-  title: {
-    flexGrow: 1,
-  },
-}));
+class TopAppBar extends React.Component {
 
-export default function TopAppBar() {
-  const classes = useStyles();
+  handleLogout() {
+    Auth.logout();
+    this.props.logout();
+  }
+
+  render() {
+  const classes = this.props.classes;
 
   return (
     <div className={classes.root}>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-            <MenuIcon />
-          </IconButton>
-            <Typography variant="h6" className={classes.title}>
-              <Link to="/">Home</Link>
-            </Typography>
-          <Button color="inherit">Login</Button>
-          <IconButton
+      <UI.AppBar position="static">
+        <UI.Toolbar>
+          <UI.IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+            <UI.MenuIcon />
+          </UI.IconButton>
+            <UI.Typography variant="h6" className={classes.title}>
+              <Link className={classes.link} to="/">Home</Link>
+            </UI.Typography>
+          
+          <span>
+          {
+            !Auth.isLogin() && <Link to="/register" className={classes.link}><UI.Button color="inherit"> Register </UI.Button></Link>
+          }
+  
+          {
+            !Auth.isLogin() && <Link to="/" className={classes.link}><UI.Button color="inherit"> Login </UI.Button></Link>
+          }
+
+          {
+            Auth.isLogin() && this.props.user
+            && <Link to="#" className={classes.link}>
+                <UI.Button color="inherit"> { this.props.user.firstname } </UI.Button>
+              </Link>
+          }
+
+          {
+            Auth.isLogin() && <Link to="/" onClick={ () => this.handleLogout() } className={classes.link}>
+              <UI.Button color="inherit"> Logout </UI.Button>
+            </Link>
+          }
+          </span>
+          
+          <UI.IconButton
               edge="end"
               aria-label="settings of current user"
               color="inherit"
             >
-              <SettingsIcon />
-            </IconButton>
-        </Toolbar>
-      </AppBar>
+              <UI.SettingsIcon />
+            </UI.IconButton>
+        </UI.Toolbar>
+      </UI.AppBar>
     </div>
   );
+  }
 }
+
+const mapStateToProps = state => {
+  return {
+    user: state.Authentification.user
+  };
+};
+
+const AppBarStyle = withStyles(NavBarStyle)(TopAppBar);
+
+export default connect(mapStateToProps, { logout })(AppBarStyle);

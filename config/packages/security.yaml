@@ -15,7 +15,7 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         api:
-            pattern: ^/api/
+            pattern: ^/api/(?!login|register)
             guard:
                 authenticators:
                     - App\Security\TokenAuthenticator
@@ -30,7 +30,7 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: '^/register', roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: '^/login', roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: '^/api/register', roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: '^/api/login', roles: IS_AUTHENTICATED_ANONYMOUSLY }
         # - { path: '^/api', roles: ROLE_API_USER }
         - { path: '^/', roles: IS_AUTHENTICATED_ANONYMOUSLY }

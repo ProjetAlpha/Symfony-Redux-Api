@@ -14,10 +14,19 @@ class UserHelper extends WebTestCase
         $apiToken = bin2hex(random_bytes(32));
         $password = bin2hex(random_bytes(32));
         $randomNumber = rand(0, 100000);
-        $name = bin2hex(random_bytes(10));
-        $email = $name.'-'.$randomNumber.'.yolo@gmail.com';
+        $id = bin2hex(random_bytes(10));
+        $email = $id.'-'.$randomNumber.'.yolo@gmail.com';
 
-        return ['email' => $email, 'password' => $password, 'apiToken' => $apiToken];
+        $firstname = bin2hex(random_bytes(9));
+        $lastname = bin2hex(random_bytes(9));
+
+        return [
+                'email' => $email,
+                'password' => $password,
+                'apiToken' => $apiToken,
+                'firstname' => $firstname,
+                'lastname' => $lastname,
+            ];
     }
 
     /**
@@ -30,41 +39,59 @@ class UserHelper extends WebTestCase
      *
      * @return void
      */
-    public static function registerUser($client, $email, $apiToken, $password)
+    public static function registerUser($client, $email, $apiToken, $password, $firstname, $lastname, $expectedResponse = null)
     {
         $client->request(
             'POST',
-            '/register',
+            '/api/register',
             [
                 'api_token' => $apiToken,
                 'email' => $email,
                 'password' => $password,
+                'firstname' => $firstname,
+                'lastname' => $lastname,
             ]
         );
 
-        static::assertEquals(201, $client->getResponse()->getStatusCode());
+        static::assertEquals($expectedResponse ? $expectedResponse : 201, $client->getResponse()->getStatusCode());
     }
 
     /**
      * Log a generated user and test if a user is logged in successfully.
      *
-     * @param [string] $client
-     * @param [string] $email
-     * @param [string] $password
+     * @param \Symfony\Bundle\FrameworkBundle\Test\WebTestCase::createClient $client
+     * @param string                                                         $email
+     * @param string                                                         $password
      *
      * @return void
      */
-    public static function loginUser($client, $email, $password)
+    public static function loginUser($client, $email, $password, $expectedResponse = null)
     {
         $client->request(
             'POST',
-            '/login',
+            '/api/login',
             [
                 'email' => $email,
                 'password' => $password,
             ]
         );
 
-        static::assertEquals(200, $client->getResponse()->getStatusCode());
+        static::assertEquals($expectedResponse ? $expectedResponse : 200, $client->getResponse()->getStatusCode());
+    }
+
+    /**
+     * Test if an api response error contains a json message.
+     *
+     * @param \Symfony\Bundle\FrameworkBundle\Test\WebTestCase::createClient $client
+     *
+     * @return void
+     */
+    public static function assertJsonResponseError($client)
+    {
+        $response = $client->getResponse()->getContent();
+        static::assertJson($response);
+
+        $json = json_decode($response, true);
+        static::assertArrayHasKey('error', $json);
     }
 }

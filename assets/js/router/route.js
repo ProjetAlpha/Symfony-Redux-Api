@@ -20,6 +20,7 @@ import SignUp from '../components/SignUp';
 /*
         <PrivateRoute component={Dashboard} path="/dashboard" exact />
         <PrivateRoute component={Settings} path="/settings" exact />
+        <PrivateRoute component={Profil} path="/profil" exact />
 */
 
 export default function App() {

@@ -1,14 +1,19 @@
 register:
-  path: /register
+  path: /api/register
   controller: App\Controller\RegistrationController::register
   methods: POST
 
 login:
-  path: /login
+  path: /api/login
   controller: App\Controller\RegistrationController::login
   methods: POST
 
 logout:
-  path: /logout
+  path: /api/logout
   controller: App\Controller\RegistrationController::logout
   methods: GET
+
+profil:
+  path: /api/profil
+  controller: App\Controller\RegistrationController::profil
+  methods: POST

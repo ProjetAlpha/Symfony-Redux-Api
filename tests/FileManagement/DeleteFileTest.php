@@ -19,7 +19,7 @@ class DeleteFileTest extends WebTestCase
         // create a random user
         extract(UserHelper::createRandomUser());
 
-        UserHelper::registerUser($client, $email, $apiToken, $password);
+        UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname);
 
         // get a random image
         $testImagePath = $client->getKernel()->getContainer()->getParameter('image_test');
@@ -65,7 +65,7 @@ class DeleteFileTest extends WebTestCase
         // create a random user
         extract(UserHelper::createRandomUser());
 
-        UserHelper::registerUser($client, $email, $apiToken, $password);
+        UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname);
 
         UserHelper::loginUser($client, $email, $password);
 

@@ -2,6 +2,7 @@
 
 namespace App\Tests\Repository;
 
+use App\Repository\UserRepository;
 use App\Tests\FileManagement\TestImage;
 use App\Tests\UserHelper;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -25,6 +26,9 @@ class UserRepositoryTest extends WebTestCase
 
         // check unauthorizied response status
         $this->assertEquals(401, $client->getResponse()->getStatusCode());
+
+        // json validation error
+        // UserHelper::assertJsonResponseError($client);
     }
 
     /**
@@ -39,7 +43,7 @@ class UserRepositoryTest extends WebTestCase
         // create a random user
         extract(UserHelper::createRandomUser());
 
-        UserHelper::registerUser($client, $email, $apiToken, $password);
+        UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname);
 
         // find api user token
         $client->request('POST', '/api/me/', [], [], []);
@@ -79,7 +83,7 @@ class UserRepositoryTest extends WebTestCase
         // create a random user
         extract(UserHelper::createRandomUser());
 
-        UserHelper::registerUser($client, $email, $apiToken, $password);
+        UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname);
 
         UserHelper::loginUser($client, $email, $password);
 
@@ -111,9 +115,7 @@ class UserRepositoryTest extends WebTestCase
 
         extract(UserHelper::createRandomUser());
 
-        UserHelper::registerUser($client, $email, $apiToken, $password);
-
-        $this->assertEquals(201, $client->getResponse()->getStatusCode());
+        UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname, 201);
     }
 
     /**
@@ -127,20 +129,13 @@ class UserRepositoryTest extends WebTestCase
 
         extract(UserHelper::createRandomUser());
 
-        UserHelper::registerUser($client, $email, $apiToken, $password);
+        UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname);
 
         // second request with same credentials
-        $client->request(
-            'POST',
-            '/register',
-            [
-                'api_token' => $apiToken,
-                'email' => $email,
-                'password' => $password,
-            ]
-        );
+        UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname, 422);
 
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        // json validation error
+        UserHelper::assertJsonResponseError($client);
     }
 
     /**
@@ -152,9 +147,9 @@ class UserRepositoryTest extends WebTestCase
     {
         $client = static::createClient();
 
-        $client->request('POST', '/register', [], [], [
+        $client->request('POST', '/api/register', [], [], [
             'CONTENT_TYPE' => 'application/json',
-            'HTTP_X-Requested-With' => 'XMLHttpRequest'
+            'HTTP_X-Requested-With' => 'XMLHttpRequest',
         ], json_encode(UserHelper::createRandomUser()));
 
         $this->assertEquals(201, $client->getResponse()->getStatusCode());
@@ -169,7 +164,7 @@ class UserRepositoryTest extends WebTestCase
     {
         $client = static::createClient();
 
-        $client->request('POST', '/register', UserHelper::createRandomUser(), [], [
+        $client->request('POST', '/api/register', UserHelper::createRandomUser(), [], [
             'HTTP_X-Requested-With' => 'XMLHttpRequest',
         ]);
 
@@ -187,7 +182,7 @@ class UserRepositoryTest extends WebTestCase
 
         extract(UserHelper::createRandomUser());
 
-        UserHelper::registerUser($client, $email, $apiToken, $password);
+        UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname);
 
         UserHelper::loginUser($client, $email, $password);
 
@@ -227,5 +222,40 @@ class UserRepositoryTest extends WebTestCase
         $data = json_decode($client->getResponse()->getContent(), true);
 
         $this->assertEquals(2, count($data['images']));
+    }
+
+    /**
+     * Test if a user has a profil.
+     *
+     * @return void
+     */
+    public function testIfAUserHasProfilInfo()
+    {
+        $client = static::createClient();
+
+        extract(UserHelper::createRandomUser());
+
+        UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname);
+
+        UserHelper::loginUser($client, $email, $password);
+
+        $userRepository = static::$container->get(UserRepository::class);
+
+        $user = $userRepository->findOneBy(['email' => $email]);
+
+        $client->request('POST', '/api/profil', ['id' => $user->getId()]);
+        $responseData = $client->getResponse()->getContent();
+
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+
+        $this->assertJson($responseData);
+
+        $data = json_decode($responseData, true);
+
+        $this->assertArrayHasKey('lastname', $data);
+        $this->assertArrayHasKey('firstname', $data);
+        $this->assertArrayHasKey('image', $data);
+
+        $this->assertEquals(0, count($data['image']));
     }
 }

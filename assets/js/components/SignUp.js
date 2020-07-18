@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import { makeStyles, withStyles } from '@material-ui/core/styles';
 
 import { Link } from 'react-router-dom';
 import SignInStyle from '../UI/SignIn/style';
@@ -17,10 +18,11 @@ class SignUp extends React.Component {
   }
 
   handleSubmit() {
-    const isEmpty = Object.values(this.state).every(x => (x === null || x === ''));
-    
-    if (!isEmpty)
-      this.props.register({ email: this.state.email, password: this.state.password });
+      this.props.register({ email: this.state.email, password: this.state.password, firstname: this.state.firstname, lastname: this.state.lastname });
+
+      if (!this.state.error) {
+        this.props.history.push('/');
+      }
   }
 
   handleChange = name => event =>  {
@@ -28,7 +30,7 @@ class SignUp extends React.Component {
   }
 
   render () {
-    const classes = SignInStyle();
+    const classes = this.props.classes;
 
     return (
       <UI.Container component="main" maxWidth="xs">
@@ -40,7 +42,7 @@ class SignUp extends React.Component {
         <UI.Typography component="h1" variant="h5">
           Sign up
         </UI.Typography>
-        <form className={classes.form} noValidate>
+        <div className={classes.form}>
           <UI.Grid container spacing={2}>
             <UI.Grid item xs={12} sm={6}>
               <UI.TextField
@@ -52,7 +54,7 @@ class SignUp extends React.Component {
                 id="firstName"
                 label="First Name"
                 autoFocus
-                onChange={this.handleChange.bind(this)}
+                onChange={this.handleChange('firstname').bind(this)}
                 error={ this.state.error ? true : false }
                 helperText={ this.state.error ? 'Incorrect firstname' : '' }
               />
@@ -66,7 +68,7 @@ class SignUp extends React.Component {
                 label="Last Name"
                 name="lastName"
                 autoComplete="lname"
-                onChange={ this.handleChange.bind(this) }
+                onChange={ this.handleChange('lastname').bind(this) }
                 error={ this.state.error ? true : false }
                 helperText={ this.state.error ? 'Incorrect lastname' : '' }
               />
@@ -82,7 +84,7 @@ class SignUp extends React.Component {
                 autoComplete="email"
                 error={ this.state.error ? true : false }
                 helperText={ this.state.error ? 'Incorrect email' : '' }
-                onChange={ this.handleChange.bind(this) }
+                onChange={ this.handleChange('email').bind(this) }
               />
             </UI.Grid>
             <UI.Grid item xs={12}>
@@ -97,7 +99,7 @@ class SignUp extends React.Component {
                 autoComplete="current-password"
                 error={ this.state.error ? true : false }
                 helperText={ this.state.error ? 'Incorrect password' : '' }
-                onChange={ this.handleChange.bind(this) }
+                onChange={ this.handleChange('password').bind(this) }
               />
             </UI.Grid>
             <UI.Grid item xs={12}>
@@ -113,18 +115,18 @@ class SignUp extends React.Component {
             variant="contained"
             color="primary"
             className={classes.submit}
-            onSubmit={this.handleSubmit.bind(this)}
+            onClick={ this.handleSubmit.bind(this) }
           >
             Sign Up
           </UI.Button>
           <UI.Grid container justify="flex-end">
             <UI.Grid item>
-              <Link to={"/"} variant="body2">
+              <Link to="/" variant="body2">
                 Already have an account? Sign in
               </Link>
             </UI.Grid>
           </UI.Grid>
-        </form>
+        </div>
       </div>
     </UI.Container>
     );
@@ -137,4 +139,6 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, { register })(SignUp);
+const registerStyle = withStyles(SignInStyle)(SignUp);
+
+export default connect(mapStateToProps, { register })(registerStyle);

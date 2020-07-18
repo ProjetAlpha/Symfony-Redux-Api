@@ -8,7 +8,7 @@ warnings_are_errors: false
 services:
     - mysql
 php:
-    - 7.2
+    - '7.4'
 
 before-install:
     - mysql -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL ON ${DB_NAME}.* TO 'travis'@'localhost' IDENTIFIED BY '${DB_PWD}';"

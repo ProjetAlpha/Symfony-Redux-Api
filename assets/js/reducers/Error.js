@@ -1,6 +1,4 @@
-const initialState = {
-  error: null
-};
+const initialState = {};
 
 export default function Error(state = initialState, action) {
     switch (action.type) {
@@ -8,11 +6,11 @@ export default function Error(state = initialState, action) {
       case 'ADD_ERROR':
         return {
           ...state,
-          error: action.error,
+          ...action.error,
         };
   
-      case 'REMOVE_ERROR':
-        return state.filter((error, i) => i !== action.index);
+      case 'CLEAR_ERROR':
+        return initialState;
   
       default:
         return state;

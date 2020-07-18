@@ -1,40 +1,46 @@
-import { client } from '.';
-import { setUser } from '../utils/Authentification';
+import client from '.';
+import * as Auth from '../utils/Authentification';
 
 export const login = user => {
     return dispatch => {
         client.post('login', {
-          params: {
             email: user.email,
             password: user.password
-          }
-      }).then(res =>
-        dispatch({ type: 'LOGIN', data: res.body })
-      ).catch(err =>
-        dispatch({ type: 'ADD_ERROR', error: err })
+      }).then(res => {
+        Auth.setUser(res.data);
+        dispatch({ type: 'LOGIN', data: res.data })
+      }
+      ).catch(err => {
+          Auth.logout();
+          dispatch({ type: 'ADD_ERROR', error: err })
+        }
       )
     }
 }
 
 export const register = user => {
     return dispatch => {
-        client.post('login', {
-          params: {
+        client.post('register', {
             email: user.email,
-            password: user.password
-          }
-      }).then(res =>
-        dispatch({ type: 'LOGIN', data: res.body }) && setUser(user)
-      ).catch(err =>
-        dispatch({ type: 'ADD_ERROR', error: err })
+            password: user.password,
+            firstname: user.firstname,
+            lastname: user.lastname
+      }).then(res => {
+          dispatch({ type: 'LOGIN', data: res.data })
+        }
+      ).catch(err => {
+          dispatch({ type: 'ADD_ERROR', error: err })
+        }
       )
     }
 }
 
 export const logout = user => {
     return dispatch => {
-        client.post('logout').then(res =>
-        dispatch({ type: 'LOGOUT', data: res.body })
+        client.get('logout').then(res => {
+          Auth.logout();
+          dispatch({ type: 'LOGOUT', data: res.data })
+        }
       ).catch(err =>
         dispatch({ type: 'ADD_ERROR', error: err })
       )

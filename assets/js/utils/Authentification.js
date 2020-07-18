@@ -1,15 +1,24 @@
-
-
-const exception = (message, name) => { this.message = message; this.name = name; };
-
-export function isLogin() {
-    const user = localStorage.getItem('user');
-    return user !== null && user.email !== null && user.id !== null;
+export const isLogin = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    return user && user.email && user.id;
 }
 
-export function setUser(user) {
-    if (localStorage.getItem('user') === null)
-        localStorage.setItem(user);
+export const setUser = (user) => {
+    if (!localStorage.getItem('user') || localStorage.getItem('user') == 'null'){
+       localStorage.setItem('user', JSON.stringify(user));
+    }
     else
-        throw new expection('User already in localStorage.', 'User exception');
+        return null;
+}
+
+export const getUser = () => {
+    return localStorage.getItem('user');
+}
+
+export const logout = () => {
+    if (localStorage.getItem('user')) {
+        localStorage.removeItem('user');
+    }
+    else
+        return null;
 }

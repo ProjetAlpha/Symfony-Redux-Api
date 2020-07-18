@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import { makeStyles, withStyles } from '@material-ui/core/styles';
 
 import * as UI from '../UI/Login/base';
 import { Link } from 'react-router-dom';
@@ -14,8 +15,13 @@ class SignIn extends React.Component {
   }
 
   handleSubmit() {
-    if (this.state.email !== '' && this.state.password !== '')
+    if (this.state.email !== '' && this.state.password !== '') {
       this.props.login({ email: this.state.email, password: this.state.password });
+      
+      if (!this.state.error) {
+        this.props.history.push('/');
+      }
+    }
   }
 
   handleChange = name => event =>  {
@@ -23,7 +29,7 @@ class SignIn extends React.Component {
   }
 
   render() {
-    const classes = LoginStyle();
+    const classes = this.props.classes;
 
     return (
       <UI.Container component="main" maxWidth="xs">
@@ -103,4 +109,6 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, { login })(SignIn);
+const loginStyle = withStyles(LoginStyle)(SignIn);
+
+export default connect(mapStateToProps, { login })(loginStyle);
