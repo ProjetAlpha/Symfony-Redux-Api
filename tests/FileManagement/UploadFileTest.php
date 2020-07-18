@@ -138,5 +138,7 @@ class UploadFileTest extends WebTestCase
 
         // check if file is in DB & is uploaded.
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
+
+        // check if user profil has image
     }
 }

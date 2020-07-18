@@ -9,6 +9,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
@@ -47,8 +50,7 @@ class RegistrationController extends AbstractController
 
         if (count($errors) > 0) {
             $errorsString = (string) $errors;
-
-            return new Response($errorsString, Response::HTTP_BAD_REQUEST);
+            throw new UnprocessableEntityHttpException($errorsString);
         }
 
         $entityManager = $this->getDoctrine()->getManager();
@@ -67,7 +69,7 @@ class RegistrationController extends AbstractController
         $email = $request->request->get('email');
 
         if (!$password || !$email) {
-            return new JsonResponse(['error' => 'Authentication error.'], Response::HTTP_BAD_REQUEST);
+            throw new BadRequestHttpException('Bad request input.');
         }
 
         $entityManager = $this->getDoctrine()->getManager();
@@ -76,7 +78,7 @@ class RegistrationController extends AbstractController
         ->findOneBy(['email' => $email]);
 
         if (!$user) {
-            return new JsonResponse(['error' => 'Authentication error.'], Response::HTTP_BAD_REQUEST);
+            throw new NotFoundHttpException('Unexpected user.');
         }
 
         if ($encoder->isPasswordValid($user, $password)) {
@@ -127,7 +129,7 @@ class RegistrationController extends AbstractController
         ->findOneBy(['id' => $id]);
 
         if (!$user) {
-            return new JsonResponse(['error' => 'Authentication error.'], Response::HTTP_BAD_REQUEST);
+            throw new NotFoundHttpException('Unexpected user.');
         }
 
         return  new JsonResponse([

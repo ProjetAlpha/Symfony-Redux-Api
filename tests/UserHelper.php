@@ -59,9 +59,9 @@ class UserHelper extends WebTestCase
     /**
      * Log a generated user and test if a user is logged in successfully.
      *
-     * @param [string] $client
-     * @param [string] $email
-     * @param [string] $password
+     * @param \Symfony\Bundle\FrameworkBundle\Test\WebTestCase::createClient $client
+     * @param string                                                         $email
+     * @param string                                                         $password
      *
      * @return void
      */
@@ -77,5 +77,21 @@ class UserHelper extends WebTestCase
         );
 
         static::assertEquals($expectedResponse ? $expectedResponse : 200, $client->getResponse()->getStatusCode());
+    }
+
+    /**
+     * Test if an api response error contains a json message.
+     *
+     * @param \Symfony\Bundle\FrameworkBundle\Test\WebTestCase::createClient $client
+     *
+     * @return void
+     */
+    public static function assertJsonResponseError($client)
+    {
+        $response = $client->getResponse()->getContent();
+        static::assertJson($response);
+
+        $json = json_decode($response, true);
+        static::assertArrayHasKey('error', $json);
     }
 }

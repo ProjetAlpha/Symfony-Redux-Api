@@ -9,6 +9,9 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -32,7 +35,7 @@ class ApiController extends AbstractController
         $apiToken = $request->headers->get('X-AUTH-TOKEN');
 
         if (null == $apiToken) {
-            return new JsonResponse(['data' => 'bad request'], 404);
+            throw new BadRequestHttpException('Unexpected api token.');
         }
 
         $user = $this->getDoctrine()
@@ -40,7 +43,7 @@ class ApiController extends AbstractController
         ->findOneBy(['apiToken' => $apiToken]);
 
         if (null == $user) {
-            return new JsonResponse(['data' => 'bad request'], 404);
+            throw new NotFoundHttpException('Unexpected user api token.');
         }
 
         return new JsonResponse(['email' => $user->getEmail(), 'api_token' => $user->getApiToken()], 200);
@@ -58,7 +61,7 @@ class ApiController extends AbstractController
         $extension = $request->request->get('extension');
 
         if (!$imageData || !$apiToken && !$email) {
-            return new JsonResponse('Bad request.', Response::HTTP_BAD_REQUEST);
+            throw new BadRequestHttpException('Unexpected request input.');
         }
 
         $entityManager = $this->getDoctrine()->getManager();
@@ -67,7 +70,7 @@ class ApiController extends AbstractController
         $user = $apiToken ? $user->findOneBy(['apiToken' => $apiToken]) : $user->findOneBy(['email' => $email]);
 
         if (!$user) {
-            return new JsonResponse('Bad request.', Response::HTTP_BAD_REQUEST);
+            throw new NotFoundHttpException('Unexpected user.');
         }
 
         $userId = $user->getId();
@@ -75,7 +78,7 @@ class ApiController extends AbstractController
         $im = imagecreatefromstring($bin);
 
         if (!$im) {
-            return new Response('Internal error.', Response::HTTP_INTERNAL_SERVER_ERROR);
+            throw new ServiceUnavailableHttpException('Image format internal error.');
         }
 
         $userDirectory = $this->getParameter('upload_image_dir').$userId;
@@ -116,7 +119,7 @@ class ApiController extends AbstractController
         $email = $request->request->get('email');
 
         if (!$apiToken && !$email) {
-            return new JsonResponse(['data' => 'bad request'], 404);
+            throw new BadRequestHttpException('Unexpected request input.');
         }
 
         $entityManager = $this->getDoctrine()->getManager();
@@ -125,7 +128,7 @@ class ApiController extends AbstractController
         $user = $apiToken ? $user->findOneBy(['apiToken' => $apiToken]) : $user->findOneBy(['email' => $email]);
 
         if (!$user) {
-            return new JsonResponse(['data' => 'bad request'], 404);
+            throw new NotFoundHttpException('Unexpected user.');
         }
 
         $imgResult = [];
@@ -148,7 +151,7 @@ class ApiController extends AbstractController
         $imageId = $request->request->get('img_id');
 
         if (!$email) {
-            return new JsonResponse(['error' => 'Delete image error.'], Response::HTTP_BAD_REQUEST);
+            throw new BadRequestHttpException('Bad request input.');
         }
 
         $entityManager = $this->getDoctrine()->getManager();
@@ -157,7 +160,7 @@ class ApiController extends AbstractController
         ->findOneBy(['email' => $email]);
 
         if (!$user) {
-            return new JsonResponse(['error' => 'Delete image error.'], Response::HTTP_BAD_REQUEST);
+            throw new NotFoundHttpException('Unexpected user.');
         }
 
         $deletedImage = [];

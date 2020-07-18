@@ -1,8 +1,6 @@
 import client from '.';
 import * as Auth from '../utils/Authentification';
 
-console.log(Auth);
-
 export const login = user => {
     return dispatch => {
         client.post('login', {
@@ -22,7 +20,6 @@ export const login = user => {
 
 export const register = user => {
     return dispatch => {
-        console.log(user);
         client.post('register', {
             email: user.email,
             password: user.password,

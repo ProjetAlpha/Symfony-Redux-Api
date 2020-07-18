@@ -5,7 +5,7 @@ export const isLogin = () => {
 
 export const setUser = (user) => {
     if (!localStorage.getItem('user') || localStorage.getItem('user') == 'null'){
-       localStorage.setItem('user', JSON.stringify(user))
+       localStorage.setItem('user', JSON.stringify(user));
     }
     else
         return null;

@@ -26,6 +26,9 @@ class UserRepositoryTest extends WebTestCase
 
         // check unauthorizied response status
         $this->assertEquals(401, $client->getResponse()->getStatusCode());
+
+        // json validation error
+        // UserHelper::assertJsonResponseError($client);
     }
 
     /**
@@ -113,8 +116,6 @@ class UserRepositoryTest extends WebTestCase
         extract(UserHelper::createRandomUser());
 
         UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname, 201);
-
-        // $this->assertEquals(201, $client->getResponse()->getStatusCode());
     }
 
     /**
@@ -131,9 +132,10 @@ class UserRepositoryTest extends WebTestCase
         UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname);
 
         // second request with same credentials
-        UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname, 400);
+        UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname, 422);
 
-        // $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        // json validation error
+        UserHelper::assertJsonResponseError($client);
     }
 
     /**

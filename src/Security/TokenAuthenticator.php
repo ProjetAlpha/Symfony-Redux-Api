@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -59,7 +60,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
         if (null === $credentials) {
             // The token header was empty, authentication fails with HTTP Status
             // Code 401 "Unauthorized"
-            return null;
+            throw new AccessDeniedHttpException('Bad credentials.');
         }
 
         $user = $this->em->getRepository(User::class)
@@ -70,17 +71,17 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
             ->findOneBy(['email' => $credentials['userInfo']->getEmail()]);
 
             if (!$user) {
-                return null;
+                throw new AccessDeniedHttpException('Bad credentials.');
             }
 
             if (time() > $credentials['userInfo']->getExpireAt()) {
-                return null;
+                throw new AccessDeniedHttpException('Credentials expired.');
             }
 
             $isAuth = hash_equals($user->getPassword(), $credentials['userInfo']->getToken());
 
             if (!$isAuth) {
-                return null;
+                throw new AccessDeniedHttpException('Bad credentials.');
             }
         }
 
