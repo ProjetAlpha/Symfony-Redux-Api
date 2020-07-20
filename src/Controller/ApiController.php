@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Image;
 use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,6 +17,22 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ApiController extends AbstractController
 {
+    /**
+     * @var EntityManagerInterface
+     */
+    private $entityManager;
+
+    /**
+     * @var ValidatorInterface
+     */
+    private $validator;
+
+    public function __construct(EntityManagerInterface $entityManager, ValidatorInterface $validator)
+    {
+        $this->entityManager = $entityManager;
+        $this->validator = $validator;
+    }
+
     /**
      * @Route("/api", name="api")
      */
@@ -38,7 +54,7 @@ class ApiController extends AbstractController
             throw new BadRequestHttpException('Unexpected api token.');
         }
 
-        $user = $this->getDoctrine()
+        $user = $this->entityManager
         ->getRepository(User::class)
         ->findOneBy(['apiToken' => $apiToken]);
 
@@ -64,8 +80,7 @@ class ApiController extends AbstractController
             throw new BadRequestHttpException('Unexpected request input.');
         }
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $user = $entityManager->getRepository(User::class);
+        $user = $this->entityManager->getRepository(User::class);
 
         $user = $apiToken ? $user->findOneBy(['apiToken' => $apiToken]) : $user->findOneBy(['email' => $email]);
 
@@ -99,9 +114,9 @@ class ApiController extends AbstractController
         $user->addImage($imageModel);
 
         // save image in database
-        $entityManager->persist($imageModel);
+        $this->entityManager->persist($imageModel);
 
-        $entityManager->flush();
+        $this->entityManager->flush();
 
         return new JsonResponse([
             'name' => $imageModel->getName(),
@@ -122,8 +137,7 @@ class ApiController extends AbstractController
             throw new BadRequestHttpException('Unexpected request input.');
         }
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $user = $entityManager->getRepository(User::class);
+        $user = $this->entityManager->getRepository(User::class);
 
         $user = $apiToken ? $user->findOneBy(['apiToken' => $apiToken]) : $user->findOneBy(['email' => $email]);
 
@@ -154,8 +168,7 @@ class ApiController extends AbstractController
             throw new BadRequestHttpException('Bad request input.');
         }
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $user = $entityManager
+        $user = $this->entityManager
         ->getRepository(User::class)
         ->findOneBy(['email' => $email]);
 
@@ -170,7 +183,7 @@ class ApiController extends AbstractController
                 foreach ($user->getImages() as $image) {
                     if ($image->getId() == $id) {
                         $user->removeImage($image);
-                        $entityManager->remove($image);
+                        $this->entityManager->remove($image);
                         if (file_exists($image->getPath())) {
                             unlink($image->getPath());
                         }
@@ -193,7 +206,7 @@ class ApiController extends AbstractController
             foreach ($user->getImages() as $image) {
                 if ($imageId == $image->getId()) {
                     $user->removeImage($image);
-                    $entityManager->remove($image);
+                    $this->entityManager->remove($image);
                     if (file_exists($image->getPath())) {
                         unlink($image->getPath());
                     }
@@ -205,7 +218,7 @@ class ApiController extends AbstractController
             }
         }
 
-        $entityManager->flush();
+        $this->entityManager->flush();
 
         return new JsonResponse($deletedImage, Response::HTTP_OK);
     }

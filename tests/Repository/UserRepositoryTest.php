@@ -135,7 +135,7 @@ class UserRepositoryTest extends WebTestCase
         UserHelper::registerUser($client, $email, $apiToken, $password, $firstname, $lastname, 422);
 
         // json validation error
-        UserHelper::assertJsonResponseError($client);
+        UserHelper::assertJsonResponseError($client, 'email');
     }
 
     /**

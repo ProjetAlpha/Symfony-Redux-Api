@@ -86,12 +86,12 @@ class UserHelper extends WebTestCase
      *
      * @return void
      */
-    public static function assertJsonResponseError($client)
+    public static function assertJsonResponseError($client, $key = null)
     {
         $response = $client->getResponse()->getContent();
         static::assertJson($response);
 
         $json = json_decode($response, true);
-        static::assertArrayHasKey('error', $json);
+        static::assertArrayHasKey($key ? $key : 'error', $json);
     }
 }

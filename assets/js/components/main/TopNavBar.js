@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from "react-redux";
+
 import * as Auth from '../../utils/Authentification';
 import * as UI from '../../UI/NavBar/base';
+
 import NavBarStyle from '../../UI/NavBar/style';
 import { logout } from '../../actions/Authentification';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
@@ -39,7 +41,7 @@ class TopAppBar extends React.Component {
 
           {
             Auth.isLogin() && this.props.user
-            && <Link to="#" className={classes.link}>
+            && <Link to="/profil" className={classes.link}>
                 <UI.Button color="inherit"> { this.props.user.firstname } </UI.Button>
               </Link>
           }

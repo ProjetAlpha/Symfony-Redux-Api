@@ -9,7 +9,7 @@ export const fetchImage = user => {
       }).then(res => 
         dispatch({ type: 'FETCH_IMAGE', data: res.data })
       ).catch(err =>
-        dispatch({ type: 'ADD_ERROR', error: err })
+        dispatch({ type: 'ADD_ERROR', error: err.response.data })
       )
   }
 }
@@ -24,7 +24,7 @@ export const uploadImage = (user, image) => {
       }).then(res =>
         dispatch({ type: 'UPLOAD_IMAGE', data: res.data })
       ).catch(err =>
-        dispatch({ type: 'ADD_ERROR', error: err })
+        dispatch({ type: 'ADD_ERROR', error: err.response.data })
       )
   }
 }
@@ -36,7 +36,7 @@ export const deleteImage = image => {
     }).then(res =>
       dispatch({ type: 'DELETE_IMAGE', data: res.data })
     ).catch(err =>
-      dispatch({ type: 'ADD_ERROR', error: err })
+      dispatch({ type: 'ADD_ERROR', error: err.response.data })
     )
   }
 }

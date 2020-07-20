@@ -1,3 +1,7 @@
+import client from '.';
+
+const baseUrl = 'api';
+
 export const getProfilData = user => {
     return dispatch => {
       client.post(`${baseUrl}/profil`, {
@@ -5,7 +9,7 @@ export const getProfilData = user => {
       }).then(res => {
         dispatch({ type: 'FETCH_PROFIL_DATA', data: res.data })
       }).catch(err => {
-        dispatch({ type: 'ADD_ERROR', error: err })
+        dispatch({ type: 'ADD_ERROR', error: err.response.data })
       });
     }
 }

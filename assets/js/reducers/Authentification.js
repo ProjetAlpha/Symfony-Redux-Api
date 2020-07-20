@@ -1,5 +1,6 @@
 const initialState = {
-  user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null
+  user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null,
+  success: false
 }
 
 export default function Authentification(state = initialState, action = {}) {
@@ -8,16 +9,30 @@ export default function Authentification(state = initialState, action = {}) {
     case 'LOGIN': {
       return {
         ...state,
-        user: action.data
+        user: action.data,
+        success: true
       }
     }
 
     case 'LOGOUT': {
-      return { }
+      return {
+        ...state,
+        success: true
+      }
     }
 
     case 'REGISTER': {
-      return { }
+      return {
+        ...state,
+        success: true
+      }
+    }
+
+    case 'RESET_SUCCESS': {
+      return {
+        ...state,
+        success: false
+      }
     }
 
     default:
