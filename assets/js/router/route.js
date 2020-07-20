@@ -16,6 +16,9 @@ import PublicRoute from './PublicRoute';
 
 import SignIn from '../components/SignIn';
 import SignUp from '../components/SignUp';
+import Profil from '../components/Profil';
+
+import * as Auth from '../utils/Authentification';
 
 /*
         <PrivateRoute component={Dashboard} path="/dashboard" exact />
@@ -30,6 +33,7 @@ export default function App() {
         <Switch>
           <PublicRoute restricted={false} component={SignIn} path="/" exact />
           <PublicRoute restricted={false} component={SignUp} path="/register" exact />
+          <PrivateRoute component={ () => <Profil id={ Auth.getUser().id }></Profil> } path="/profil" exact />
         </Switch>
     </BrowserRouter>
   );

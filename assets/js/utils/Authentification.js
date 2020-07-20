@@ -12,7 +12,11 @@ export const setUser = (user) => {
 }
 
 export const getUser = () => {
-    return localStorage.getItem('user');
+    if (!isLogin()) {
+        return false;
+    }
+    
+    return JSON.parse(localStorage.getItem('user'));
 }
 
 export const logout = () => {

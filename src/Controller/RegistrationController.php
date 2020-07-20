@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Security\UserSession;
+use App\Services\Normalize;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,14 +13,34 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class RegistrationController extends AbstractController
 {
+    /**
+     * @var EntityManagerInterface
+     */
+    private $entityManager;
+
+    /**
+     * @var ValidatorInterface
+     */
+    private $validator;
+
+    /**
+     * @var Normalize
+     */
+    private $normalize;
+
+    public function __construct(EntityManagerInterface $entityManager, ValidatorInterface $validator, Normalize $normalize)
+    {
+        $this->entityManager = $entityManager;
+        $this->validator = $validator;
+        $this->normalize = $normalize;
+    }
+
     /**
      * @Route("/", name="index")
      */
@@ -30,7 +52,7 @@ class RegistrationController extends AbstractController
     /**
      * @Route("/api/register", name="register")
      */
-    public function register(GuardAuthenticatorHandler $guardHandler, Request $request, ValidatorInterface $validator, UserPasswordEncoderInterface $encoder): Response
+    public function register(Request $request, UserPasswordEncoderInterface $encoder): JsonResponse
     {
         $params = $request->request->all();
 
@@ -46,18 +68,20 @@ class RegistrationController extends AbstractController
         $user->setRoles(['ROLE_USER', 'ROLE_API_USER']);
 
         // check if email is unique and if password and email are valid.
-        $errors = $validator->validate($user);
+        $errors = $this->validator->validate($user);
 
         if (count($errors) > 0) {
-            $errorsString = (string) $errors;
-            throw new UnprocessableEntityHttpException($errorsString);
+            $messages = [];
+            // normalize symfony validation.
+            $messages = $this->normalize->transformSymfonyValidation($errors);
+
+            return new JsonResponse($messages, Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($user);
-        $entityManager->flush();
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
 
-        return new Response('Register Sucess!', Response::HTTP_CREATED, ['content-type' => 'text/plain']);
+        return new JsonResponse('Register Sucess!', Response::HTTP_CREATED);
     }
 
     /**
@@ -72,13 +96,12 @@ class RegistrationController extends AbstractController
             throw new BadRequestHttpException('Bad request input.');
         }
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $user = $entityManager
+        $user = $this->entityManager
         ->getRepository(User::class)
         ->findOneBy(['email' => $email]);
 
         if (!$user) {
-            throw new NotFoundHttpException('Unexpected user.');
+            throw new NotFoundHttpException('Wrong credentials, provide a valid username and password.');
         }
 
         if ($encoder->isPasswordValid($user, $password)) {
@@ -98,7 +121,7 @@ class RegistrationController extends AbstractController
             ], Response::HTTP_OK);
         }
 
-        return new JsonResponse(['error' => 'Authentication error.'], Response::HTTP_UNAUTHORIZED);
+        return new JsonResponse(['error' => 'Bad credentials.'], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
@@ -123,8 +146,7 @@ class RegistrationController extends AbstractController
     {
         $id = $request->request->get('id');
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $user = $entityManager
+        $user = $this->entityManager
         ->getRepository(User::class)
         ->findOneBy(['id' => $id]);
 

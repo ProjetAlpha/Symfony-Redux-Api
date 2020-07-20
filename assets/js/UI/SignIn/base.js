@@ -10,8 +10,13 @@ import Box from '@material-ui/core/Box';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import { Alert, AlertTitle } from '@material-ui/lab';
 
 export {
+    AlertTitle,
+    Alert,
+    FormHelperText,
     Avatar,
     Button,
     CssBaseline,

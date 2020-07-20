@@ -6,7 +6,9 @@ import { Link } from 'react-router-dom';
 import SignInStyle from '../UI/SignIn/style';
 import * as UI from '../UI/SignIn/base';
 
-import { register } from '../actions/Authentification';
+import { getError } from '../utils/Error';
+import { register, resetSuccess } from '../actions/Authentification';
+import { clearError } from '../actions/Error';
 
 class SignUp extends React.Component {
 
@@ -18,20 +20,31 @@ class SignUp extends React.Component {
   }
 
   handleSubmit() {
+      if (this.state.email == '' || this.state.password == '' || this.state.firstname == '' || this.state.lastname == '')
+        return ;
+      
       this.props.register({ email: this.state.email, password: this.state.password, firstname: this.state.firstname, lastname: this.state.lastname });
-
-      if (!this.state.error) {
-        this.props.history.push('/');
-      }
   }
 
   handleChange = name => event =>  {
     this.setState({ [name]: event.target.value });
   }
 
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (nextProps.success !== this.props.success) {
+      if (nextProps.success) {
+        this.props.history.push('/');
+        
+        // clear error and reset register success.
+        this.props.resetSuccess();
+        this.props.clearError();
+      }
+    }
+  }
+
   render () {
     const classes = this.props.classes;
-
+    
     return (
       <UI.Container component="main" maxWidth="xs">
       <UI.CssBaseline />
@@ -42,7 +55,7 @@ class SignUp extends React.Component {
         <UI.Typography component="h1" variant="h5">
           Sign up
         </UI.Typography>
-        <div className={classes.form}>
+        <form className={classes.form} action="javascript:void(0);">
           <UI.Grid container spacing={2}>
             <UI.Grid item xs={12} sm={6}>
               <UI.TextField
@@ -55,8 +68,8 @@ class SignUp extends React.Component {
                 label="First Name"
                 autoFocus
                 onChange={this.handleChange('firstname').bind(this)}
-                error={ this.state.error ? true : false }
-                helperText={ this.state.error ? 'Incorrect firstname' : '' }
+                error={ getError(this.props, 'firstname') }
+                helperText={ getError(this.props, 'firstname') ? getError(this.props, 'firstname') : '' }
               />
             </UI.Grid>
             <UI.Grid item xs={12} sm={6}>
@@ -69,8 +82,8 @@ class SignUp extends React.Component {
                 name="lastName"
                 autoComplete="lname"
                 onChange={ this.handleChange('lastname').bind(this) }
-                error={ this.state.error ? true : false }
-                helperText={ this.state.error ? 'Incorrect lastname' : '' }
+                error={ getError(this.props, 'lastname') ? true : false }
+                helperText={ getError(this.props, 'lastname') ? getError(this.props, 'lastname') : '' }
               />
             </UI.Grid>
             <UI.Grid item xs={12}>
@@ -82,8 +95,8 @@ class SignUp extends React.Component {
                 label="Email Address"
                 name="email"
                 autoComplete="email"
-                error={ this.state.error ? true : false }
-                helperText={ this.state.error ? 'Incorrect email' : '' }
+                error={ getError(this.props, 'email') ? true : false }
+                helperText={ getError(this.props, 'email') ? getError(this.props, 'email') : '' }
                 onChange={ this.handleChange('email').bind(this) }
               />
             </UI.Grid>
@@ -97,15 +110,9 @@ class SignUp extends React.Component {
                 type="password"
                 id="password"
                 autoComplete="current-password"
-                error={ this.state.error ? true : false }
-                helperText={ this.state.error ? 'Incorrect password' : '' }
+                error={ getError(this.props, 'password') ? true : false }
+                helperText={ getError(this.props, 'password') ? getError(this.props, 'password') : '' }
                 onChange={ this.handleChange('password').bind(this) }
-              />
-            </UI.Grid>
-            <UI.Grid item xs={12}>
-              <UI.FormControlLabel
-                control={<UI.Checkbox value="allowExtraEmails" color="primary" />}
-                label="I want to receive inspiration, marketing promotions and updates via email."
               />
             </UI.Grid>
           </UI.Grid>
@@ -126,7 +133,8 @@ class SignUp extends React.Component {
               </Link>
             </UI.Grid>
           </UI.Grid>
-        </div>
+          <UI.FormHelperText></UI.FormHelperText>
+        </form>
       </div>
     </UI.Container>
     );
@@ -135,10 +143,11 @@ class SignUp extends React.Component {
 
 const mapStateToProps = state => {
   return {
-    error: state.error
+    error: state.Error.error,
+    success: state.Authentification.success
   };
 };
 
 const registerStyle = withStyles(SignInStyle)(SignUp);
 
-export default connect(mapStateToProps, { register })(registerStyle);
+export default connect(mapStateToProps, { register, resetSuccess, clearError })(registerStyle);

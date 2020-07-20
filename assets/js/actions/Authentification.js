@@ -11,8 +11,9 @@ export const login = user => {
         dispatch({ type: 'LOGIN', data: res.data })
       }
       ).catch(err => {
+          console.log(err.response);
           Auth.logout();
-          dispatch({ type: 'ADD_ERROR', error: err })
+          dispatch({ type: 'ADD_ERROR', error: err.response.data })
         }
       )
     }
@@ -26,10 +27,10 @@ export const register = user => {
             firstname: user.firstname,
             lastname: user.lastname
       }).then(res => {
-          dispatch({ type: 'LOGIN', data: res.data })
+          dispatch({ type: 'REGISTER', data: res.data })
         }
       ).catch(err => {
-          dispatch({ type: 'ADD_ERROR', error: err })
+          dispatch({ type: 'ADD_ERROR', error: err.response.data })
         }
       )
     }
@@ -42,7 +43,13 @@ export const logout = user => {
           dispatch({ type: 'LOGOUT', data: res.data })
         }
       ).catch(err =>
-        dispatch({ type: 'ADD_ERROR', error: err })
+        dispatch({ type: 'ADD_ERROR', error: err.response.data })
       )
     }
+}
+
+export const resetSuccess = () => {
+  return dispatch => {
+    dispatch({ type: 'RESET_SUCCESS'})
+  }
 }

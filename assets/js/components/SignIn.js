@@ -5,7 +5,9 @@ import { makeStyles, withStyles } from '@material-ui/core/styles';
 import * as UI from '../UI/Login/base';
 import { Link } from 'react-router-dom';
 import LoginStyle from '../UI/Login/style';
-import { login } from '../actions/Authentification';
+import { login, resetSuccess } from '../actions/Authentification';
+import { clearError } from '../actions/Error';
+import { getError } from "../utils/Error";
 
 class SignIn extends React.Component {
 
@@ -17,15 +19,24 @@ class SignIn extends React.Component {
   handleSubmit() {
     if (this.state.email !== '' && this.state.password !== '') {
       this.props.login({ email: this.state.email, password: this.state.password });
-      
-      if (!this.state.error) {
-        this.props.history.push('/');
-      }
     }
   }
 
   handleChange = name => event =>  {
     this.setState({ [name]: event.target.value });
+  }
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (nextProps.success !== this.props.success) {
+      if (nextProps.success) {
+        // TODO : user dashboard.
+        this.props.history.push('/profil');
+        
+        // clear error and reset register success.
+        this.props.resetSuccess();
+        this.props.clearError();
+      }
+    }
   }
 
   render() {
@@ -53,8 +64,6 @@ class SignIn extends React.Component {
               autoComplete="email"
               autoFocus
               onChange={ this.handleChange('email').bind(this) }
-              error={ this.state.error ? true : false }
-              helperText={ this.state.error ? 'Incorrect email' : '' }
             />
             <UI.TextField
               variant="outlined"
@@ -67,13 +76,16 @@ class SignIn extends React.Component {
               id="password"
               autoComplete="current-password"
               onChange={ this.handleChange('password').bind(this) }
-              error={ this.state.error ? true : false }
-              helperText={ this.state.error ? 'Incorrect password' : '' }
             />
-            <UI.FormControlLabel
-              control={<UI.Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            />
+            
+            {
+              getError(this.props) && 
+              <UI.Alert severity="error">
+                <UI.AlertTitle>Error</UI.AlertTitle>
+                  { getError(this.props) }
+              </UI.Alert>
+            }
+            
             <UI.Button
               type="submit"
               fullWidth
@@ -105,10 +117,11 @@ class SignIn extends React.Component {
 
 const mapStateToProps = state => {
   return {
-    error: state.error
+    error: state.Error.error,
+    success: state.Authentification.success
   };
 };
 
 const loginStyle = withStyles(LoginStyle)(SignIn);
 
-export default connect(mapStateToProps, { login })(loginStyle);
+export default connect(mapStateToProps, { login, resetSuccess, clearError })(loginStyle);
