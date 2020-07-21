@@ -15,10 +15,15 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         api:
-            pattern: ^/api/(?!login|register)
+            pattern: ^/api/(?!login|register|admin)
             guard:
                 authenticators:
                     - App\Security\TokenAuthenticator
+        admin:
+            pattern: ^/api/admin
+            guard:
+                authenticators:
+                    - App\Security\AdminAuthenticator
 
         default:
             anonymous: lazy

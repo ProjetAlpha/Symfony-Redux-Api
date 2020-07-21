@@ -55,6 +55,11 @@ class User implements UserInterface
      */
     private $lastname;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $is_admin;
+
     public function __construct()
     {
         $this->images = new ArrayCollection();
@@ -201,6 +206,18 @@ class User implements UserInterface
     public function setLastname(string $lastname): self
     {
         $this->lastname = $lastname;
+
+        return $this;
+    }
+
+    public function getIsAdmin(): ?bool
+    {
+        return $this->is_admin;
+    }
+
+    public function setIsAdmin(?bool $is_admin): self
+    {
+        $this->is_admin = $is_admin;
 
         return $this;
     }

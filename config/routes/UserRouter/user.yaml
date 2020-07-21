@@ -17,3 +17,8 @@ profil:
   path: /api/profil
   controller: App\Controller\RegistrationController::profil
   methods: POST
+
+admin:
+  path: /api/admin/me
+  controller: App\Controller\AdminController::me
+  methods: POST
