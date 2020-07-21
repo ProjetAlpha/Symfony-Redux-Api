@@ -20,7 +20,7 @@ before_script:
     - phpenv config-rm xdebug.ini
 
 install:
-    - phpenv config-rm xdebug.ini
+    # - phpenv config-rm xdebug.ini
     - composer install --prefer-dist --no-interaction --no-progress --no-suggest
     - php bin/console doctrine:database:create --env=travis --if-not-exists
     - php bin/console doctrine:schema:create --env=travis
