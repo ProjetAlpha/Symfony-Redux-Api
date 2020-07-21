@@ -17,7 +17,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
-class TokenAuthenticator extends AbstractGuardAuthenticator
+class AdminAuthenticator extends AbstractGuardAuthenticator
 {
     private $em;
 
@@ -40,7 +40,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return $request->headers->has('X-AUTH-TOKEN') || $this->session->get('userInfo');
+        return $this->session->get('userInfo');
     }
 
     /**
@@ -50,7 +50,6 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     public function getCredentials(Request $request)
     {
         return [
-            'apiToken' => $request->headers->get('X-AUTH-TOKEN'),
             'userInfo' => $this->session->get('userInfo'),
         ];
     }
@@ -60,33 +59,27 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
         if (null === $credentials) {
             // The token header was empty, authentication fails with HTTP Status
             // Code 401 "Unauthorized"
-            throw new AccessDeniedHttpException('Wrong user credentials.');
+            throw new AccessDeniedHttpException('Wrong admin credentials..');
         }
 
-        $user = $this->em->getRepository(User::class)
-        ->findOneBy(['apiToken' => $credentials['apiToken']]);
+        $admin = $this->em->getRepository(User::class)
+        ->findOneBy(['email' => $credentials['userInfo']->getEmail()]);
 
-        if (!$user && $credentials['userInfo']) {
-            $user = $this->em->getRepository(User::class)
-            ->findOneBy(['email' => $credentials['userInfo']->getEmail()]);
-
-            if (!$user) {
-                throw new AccessDeniedHttpException('Wrong user credentials.');
-            }
-
-            if (time() > $credentials['userInfo']->getExpireAt()) {
-                $this->session->invalidate();
-                throw new AccessDeniedHttpException('Credentials expired.');
-            }
-
-            $isAuth = hash_equals($user->getPassword(), $credentials['userInfo']->getToken());
-
-            if (!$isAuth) {
-                throw new AccessDeniedHttpException('Wrong user credentials.');
-            }
+        if (!$admin) {
+            throw new AccessDeniedHttpException('Wrong admin credentials.');
         }
 
-        return $user;
+        if (!$admin->getIsAdmin()) {
+            throw new AccessDeniedHttpException('Wrong access level.');
+        }
+
+        $isAuth = hash_equals($admin->getPassword(), $credentials['userInfo']->getToken());
+
+        if (!$isAuth) {
+            throw new AccessDeniedHttpException('Wrong admin credentials.');
+        }
+
+        return $admin;
     }
 
     public function checkCredentials($credentials, UserInterface $user)
@@ -100,6 +93,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
         // on success, let the request continue
+        // log user access, monitoring... ?
 
         return null;
     }
@@ -108,7 +102,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     {
         $data = [
             // you may want to customize or obfuscate the message first
-            'standardUserMessage' => strtr($exception->getMessageKey(), $exception->getMessageData()),
+            'adminUserMessage' => strtr($exception->getMessageKey(), $exception->getMessageData()),
 
             // or to translate this message
             // $this->translator->trans($exception->getMessageKey(), $exception->getMessageData())
@@ -124,7 +118,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     {
         $data = [
             // you might translate this message
-            'standardUserMessage' => 'Authentication Required',
+            'adminUserMessage' => 'Authentication Required',
         ];
 
         return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);

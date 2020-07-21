@@ -147,10 +147,12 @@ class ApiController extends AbstractController
 
         $imgResult = [];
         foreach ($user->getImages() as $k => $image) {
-            $imgResult[$k]['path'] = $image->getPath();
-            $imgResult[$k]['id'] = $image->getId();
-            $imgResult[$k]['name'] = $image->getName();
-            $imgResult[$k]['user_id'] = $image->getUserId()->getId();
+            $imgResult[$k] = [
+                'path' => $image->getPath(),
+                'id' => $image->getId(),
+                'name' => $image->getName(),
+                'user_id' => $image->getUserId()->getId(),
+            ];
         }
 
         return new JsonResponse(['email' => $user->getEmail(), 'images' => $imgResult, 'id' => $user->getId()], 200);

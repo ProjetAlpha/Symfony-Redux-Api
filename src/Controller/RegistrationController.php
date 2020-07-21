@@ -121,7 +121,7 @@ class RegistrationController extends AbstractController
             ], Response::HTTP_OK);
         }
 
-        return new JsonResponse(['error' => 'Bad credentials.'], Response::HTTP_UNAUTHORIZED);
+        return new JsonResponse(['error' => 'Wrong user login.'], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
