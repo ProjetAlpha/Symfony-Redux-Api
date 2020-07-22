@@ -16,7 +16,7 @@ export default function Authentification(state = initialState, action = {}) {
 
     case 'LOGOUT': {
       return {
-        ...state,
+        user: null,
         success: true
       }
     }

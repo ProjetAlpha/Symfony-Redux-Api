@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
-import { isLogin }  from '../utils/Authentification';
+import { isLogin, isAdmin }  from '../utils/Authentification';
 
 const PublicRoute = ({component: Component, restricted, ...rest}) => {
     return (
@@ -8,7 +8,7 @@ const PublicRoute = ({component: Component, restricted, ...rest}) => {
         // restricted = true meaning restricted route
         <Route {...rest} render={props => (
             isLogin() && restricted ?
-                <Redirect to="/dashboard" />
+                <Redirect to={!isAdmin() ? "/profil" : "/admin"}/>
             : <Component {...props} />
         )} />
     );

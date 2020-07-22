@@ -39,6 +39,13 @@ class UserSession
      */
     private $expireAt;
 
+    /**
+     * Tell if a user is an administrator.
+     *
+     * @var [type]
+     */
+    private $isAdmin;
+
     public function __construct()
     {
     }
@@ -68,9 +75,21 @@ class UserSession
         return $this->expireAt;
     }
 
+    public function getIsAdmin()
+    {
+        return $this->isAdmin;
+    }
+
     public function setIsLoggedIn($bool)
     {
         $this->isLoggedIn = $bool;
+
+        return $this;
+    }
+
+    public function setIsAdmin($bool)
+    {
+        $this->isAdmin = $bool;
 
         return $this;
     }

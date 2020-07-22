@@ -59,4 +59,45 @@ class AdminController extends AbstractController
             Response::HTTP_OK
         );
     }
+
+    /**
+     * @Route("/api/admin/users/fetch", name="admin_fetch_user")
+     */
+    public function getUsers()
+    {
+        $users = $this->entityManager
+        ->getRepository(User::class)
+        ->getUsers(false);
+
+        return new JsonResponse($users, Response::HTTP_OK);
+    }
+
+    /**
+     * @Route("/api/admin/users/delete", name="admin_delete_user")
+     */
+    public function removeUser(Request $request)
+    {
+        $id = $request->request->get('id');
+
+        if (!$id) {
+            throw new NotFoundHttpException('Unexpected admin post.');
+        }
+
+        $user = $this->entityManager
+        ->getRepository(User::class)
+        ->findOneBy(['id' => $id]);
+
+        if (!$user) {
+            throw new NotFoundHttpException('Unexpected admin post.');
+        }
+
+        $this->entityManager->remove($user);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'email' => $user->getEmail(),
+            'firstname' => $user->getLastname(),
+            'lastname' => $user->getFirstname(),
+        ], Response::HTTP_OK);
+    }
 }

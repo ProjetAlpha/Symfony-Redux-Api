@@ -1,4 +1,5 @@
 import axios from "axios";
+import { logoutOnResponseError } from '../utils/Authentification';
 
 /**
  * Base api requests configuration.
@@ -13,27 +14,24 @@ const client = axios.create({
   }
 });
 
-axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+client.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 /**
- * Server error middleware.
+ * Logout a user when a server session has expired.
  *
- * @param   Error
- *
- * @return  Promise
+ * @param   response 
+ * @param   response
+ * @param   error
+ * 
+ * @return  void
  */
-axios.interceptors.response.use(undefined, (err) => {
-  return new Promise(() => {
-    if (err.response.status === 401) {
-      // unauthorized request, redirect to login form
-      window.location.href = client.baseURL;
-    } else if (err.response.status === 500) {
-      document.open();
-      document.write(err.response.data);
-      document.close();
-    }
-    throw err;
-  });
+client.interceptors.response.use(response => response, error => {
+  if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+    logoutOnResponseError(error.response.status);
+    window.location = '/';
+  } else {
+    return Promise.reject(error);
+  }
 });
 
 export default client;
