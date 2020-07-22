@@ -37,6 +37,48 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
+     * Find a specified user by role.
+     *
+     * @param string $role
+     *
+     * @return array
+     */
+    public function findByRole($role)
+    {
+        $qb = $this->_em->createQueryBuilder();
+        $qb->select('u')
+        ->from($this->_entityName, 'u')
+        ->where('u.roles LIKE :roles')
+        ->setParameter('roles', '%"'.$role.'"%');
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Get all standards or administrators users.
+     *
+     * @param bool $isAdmin
+     *
+     * @return array
+     */
+    public function getUsers($isAdmin)
+    {
+        if (!$isAdmin) {
+            return $this->createQueryBuilder('u')
+                ->select('u.email, u.id, u.firstname, u.lastname, u.is_admin')
+                ->andWhere('u.is_admin IS NULL')
+                ->getQuery()
+                ->getResult();
+        }
+
+        return $this->createQueryBuilder('u')
+            ->select('u.email, u.id, u.firstname, u.lastname, u.is_admin')
+            ->andWhere('u.is_admin IS NOT NULL')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Repository method for finding the newest inserted
      * entry inside the database. Will return the latest
      * entry when one is existent, otherwise will return

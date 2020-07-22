@@ -3,6 +3,11 @@ export const isLogin = () => {
     return user && user.email && user.id;
 }
 
+export const isAdmin = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    return user && user.email && user.id && user.isAdmin;
+}
+
 export const setUser = (user) => {
     if (!localStorage.getItem('user') || localStorage.getItem('user') == 'null'){
        localStorage.setItem('user', JSON.stringify(user));
@@ -25,4 +30,11 @@ export const logout = () => {
     }
     else
         return null;
+}
+
+export const logoutOnResponseError = (code) => {
+    // forbidden or unauthorized automatically logout user
+    if (code === 403 || code == 401) {
+        logout();
+    }
 }

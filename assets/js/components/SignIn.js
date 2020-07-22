@@ -30,7 +30,7 @@ class SignIn extends React.Component {
     if (nextProps.success !== this.props.success) {
       if (nextProps.success) {
         // TODO : user dashboard.
-        this.props.history.push('/profil');
+        this.props.history.push(nextProps.user && nextProps.user.isAdmin ? '/admin' : '/profil');
         
         // clear error and reset register success.
         this.props.resetSuccess();
@@ -118,7 +118,8 @@ class SignIn extends React.Component {
 const mapStateToProps = state => {
   return {
     error: state.Error.error,
-    success: state.Authentification.success
+    success: state.Authentification.success,
+    user: state.Authentification.user
   };
 };
 

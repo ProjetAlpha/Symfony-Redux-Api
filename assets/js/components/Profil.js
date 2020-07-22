@@ -39,8 +39,9 @@ class Profil extends React.Component {
                 {
                   this.state.user && 
                   Object.entries(this.state.user).map(([key,value], i) =>
-                    <UI.ListItem button key={i}>
-                      <UI.ListItemText inset={true} primary={key} secondary={value} />
+                    <UI.ListItem  button key={i}>
+                      <UI.ListItemText className={classes.item} primary={key}/>
+                      <UI.ListItemText className={classes.item} secondary={value}/>
                     </UI.ListItem>
                   )
                 }

@@ -22,3 +22,13 @@ admin:
   path: /api/admin/me
   controller: App\Controller\AdminController::me
   methods: POST
+
+admin_fetch_user:
+  path: /api/admin/users/fetch
+  controller: App\Controller\AdminController::getUsers
+  methods: GET
+
+admin_delete_user:
+  path: /api/admin/users/delete
+  controller: App\Controller\AdminController::removeUser
+  methods: DELETE

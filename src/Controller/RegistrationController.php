@@ -108,6 +108,7 @@ class RegistrationController extends AbstractController
             $userSession = new UserSession();
             $userSession->setToken($user->getPassword())->setEmail($user->getEmail())->setId($user->getId());
             $userSession->setIsLoggedIn(true);
+            $userSession->setIsAdmin($user->getIsAdmin());
 
             // Token expire in 1 week.
             $userSession->setExpireAt(time() + (7 * 24 * 60 * 60));
@@ -118,6 +119,7 @@ class RegistrationController extends AbstractController
                 'id' => $user->getId(),
                 'firstname' => $user->getFirstname(),
                 'lastname' => $user->getLastname(),
+                'isAdmin' => $user->getIsAdmin(),
             ], Response::HTTP_OK);
         }
 

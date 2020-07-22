@@ -3,6 +3,7 @@
 namespace App\Tests\Repository;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use App\Tests\UserHelper;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -134,5 +135,76 @@ class AdminRepositoryTest extends WebTestCase
         $this->client->request('POST', '/api/admin/me', ['email' => $email], [], []);
 
         $this->assertEquals(403, $this->client->getResponse()->getStatusCode());
+    }
+
+    /**
+     * Test if an administrator can find all standard users (none administrator users).
+     *
+     * @return void
+     */
+    public function testIfAnAdministratorCanFetchUsers()
+    {
+        extract(UserHelper::createRandomUser());
+
+        // register a random user and log an administrator
+        UserHelper::registerUser($this->client, $email, $apiToken, $password, $firstname, $lastname);
+
+        UserHelper::loginUser($this->client, $this->admin->getEmail(), $this->originalPassword);
+
+        $this->client->request('GET', '/api/admin/users/fetch', [], [], []);
+
+        $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
+
+        $response = $this->client->getResponse()->getContent();
+
+        $this->assertJson($response);
+
+        $data = json_decode($response, true);
+
+        $hasNewUser = false;
+        foreach ($data as $values) {
+            $this->assertArrayHasKey('id', $values);
+            $this->assertArrayHasKey('email', $values);
+            $this->assertArrayHasKey('is_admin', $values);
+
+            $this->assertEquals(null, $values['is_admin']);
+
+            if ($values['email'] == $email) {
+                $hasNewUser = true;
+            }
+        }
+
+        $this->assertTrue($hasNewUser);
+    }
+
+    /**
+     * Test if an administrator can delete a specified user.
+     *
+     * @return void
+     */
+    public function testIfAnAdministratorCanDeleteAUser()
+    {
+        extract(UserHelper::createRandomUser());
+
+        // register a random user and log an administrator
+        UserHelper::registerUser($this->client, $email, $apiToken, $password, $firstname, $lastname);
+
+        UserHelper::loginUser($this->client, $this->admin->getEmail(), $this->originalPassword);
+
+        $userRepository = static::$container->get(UserRepository::class);
+
+        $user = $userRepository->findOneBy(['email' => $email]);
+
+        $this->assertNotEmpty($user);
+
+        $this->client->request('DELETE', '/api/admin/users/delete', ['id' => $user->getId()], [], []);
+
+        $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
+
+        $userRepository = static::$container->get(UserRepository::class);
+
+        $user = $userRepository->findOneBy(['email' => $email]);
+
+        $this->assertEmpty($user);
     }
 }
