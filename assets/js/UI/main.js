@@ -57,3 +57,9 @@ export const buttons = {
         border: 0,
     })
 }
+
+export const body = theme => ({
+    root: {
+        height:'100%'
+    },
+})

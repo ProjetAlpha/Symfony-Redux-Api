@@ -8,8 +8,6 @@ if (!Encore.isRuntimeEnvironmentConfigured()) {
 }
 
 Encore
-    .enableReactPreset()
-
     // directory where compiled assets will be stored
     .setOutputPath('public/build/')
     // public path used by the web server to access the output path
@@ -70,6 +68,18 @@ Encore
         options['process.env'].DEV_API_BASEURL = JSON.stringify(env.parsed.DEV_API_BASEURL);
         options['process.env'].PROD_API_BASEURL = JSON.stringify(env.parsed.PROD_API_BASEURL);
     })
+
+
+    .configureDevServerOptions(options => {
+        options.historyApiFallback = true,
+        compress = true,
+        options.hot = true,
+        options.headers = {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+            "Access-Control-Allow-Headers": "X-Requested-With, content-type, Authorization"
+        }
+    })
     // enables Sass/SCSS support
     //.enableSassLoader()
 
@@ -84,7 +94,7 @@ Encore
     //.autoProvidejQuery()
 
     // uncomment if you use API Platform Admin (composer req api-admin)
-    //.enableReactPreset()
+    .enableReactPreset()
     //.addEntry('admin', './assets/js/admin.js')
 ;
 

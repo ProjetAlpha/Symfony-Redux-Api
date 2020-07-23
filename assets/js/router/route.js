@@ -19,6 +19,10 @@ import SignIn from '../components/SignIn';
 import SignUp from '../components/SignUp';
 import Profil from '../components/Profil';
 import Admin from '../components/Admin';
+import NotFound from '../components/main/NotFound';
+import { withStyles } from '@material-ui/core/styles';
+import { withRouter } from 'react-router-dom';
+import { body } from '../UI/main';
 
 import * as Auth from '../utils/Authentification';
 
@@ -26,16 +30,26 @@ import * as Auth from '../utils/Authentification';
         <PrivateRoute component={dashboard} path="/" exact />
 */
 
-export default function App() {
-  return (
-    <BrowserRouter>
-        <TopAppBar></TopAppBar>
-        <Switch>
-          <AdminRoute restricted={true} component={Admin} path="/admin" exact />
-          <PublicRoute restricted={true} component={SignIn} path="/" exact />
-          <PublicRoute restricted={true} component={SignUp} path="/register" exact />
-          <PrivateRoute component={ () => <Profil id={ Auth.getUser().id }></Profil> } path="/profil" exact />
-        </Switch>
-    </BrowserRouter>
-  );
+class App extends Component {
+
+  render() {
+    const classes = this.props.classes;
+
+    return (
+      <div classes={classes.root}>
+          <TopAppBar></TopAppBar>
+          <Switch>
+            <AdminRoute restricted={true} component={Admin} path="/admin" exact />
+            <PublicRoute restricted={true} component={SignIn} path="/" exact />
+            <PublicRoute restricted={true} component={SignUp} path="/register" exact />
+            <PrivateRoute component={ () => <Profil id={ Auth.getUser().id }></Profil> } path="/profil" exact />
+            <Route component={NotFound}/>
+          </Switch>
+      </div>
+    );
+  }
 }
+
+const appStyle = withStyles(body)(App);
+
+export default withRouter(appStyle);
