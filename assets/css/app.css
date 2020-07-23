@@ -1,1 +1,9 @@
 
+body:not(.sidebard-false) {
+    padding-left: 240px;
+    margin: 0;
+}
+
+html, body {
+    height: 100%;
+}

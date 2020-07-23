@@ -1,9 +1,10 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import { MemoryRouter, Route } from 'react-router';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 
 import * as UI from '../UI/Admin/base';
-
+import Pagination from './main/Pagination';
 import { getUsers, removeUserById } from '../actions/Admin';
 import AdminStyle from '../UI/Admin/style';
 
@@ -28,8 +29,9 @@ class Admin extends React.Component {
 
         return (
             <div className={classes.root}>
-            { this.props.users &&
-                this.props.users.map((user, index) => (
+                <div className={classes.toolbar} />
+            { this.props.users && <Pagination baseUrl={'/admin'} maxItem={ 10 } data={ this.props.users } render={
+                (user, index) => (
                 <UI.Card className={classes.card} key={index}>
                     <div className={classes.details}>
                         <UI.CardContent className={classes.content}>
@@ -42,7 +44,9 @@ class Admin extends React.Component {
                         </UI.CardContent>
                     </div>
                 </UI.Card>
-                ))
+                )
+            }
+            />
             }
             </div>
         );

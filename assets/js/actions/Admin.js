@@ -5,7 +5,6 @@ const baseUrl = '/admin';
 export const getUsers = () => {
     return dispatch => {
         client.get(`${baseUrl}/users/fetch`).then(res => {
-        console.log(res.data);
         dispatch({ type: 'GET_USERS', data: res.data })
       }
       ).catch(err => {

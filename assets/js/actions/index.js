@@ -14,6 +14,8 @@ const client = axios.create({
   }
 });
 
+// required for cross origin api request, otherwise session id is missing.
+client.defaults.withCredentials = true;
 client.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 /**

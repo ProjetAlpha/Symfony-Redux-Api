@@ -2,6 +2,7 @@ import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
 import { isLogin, isAdmin }  from '../utils/Authentification';
 
+console.log(isAdmin());
 const PublicRoute = ({component: Component, restricted, ...rest}) => {
     return (
         // restricted = false meaning public route
