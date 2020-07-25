@@ -73,11 +73,11 @@ class AdminController extends AbstractController
     }
 
     /**
-     * @Route("/api/admin/users/delete", name="admin_delete_user")
+     * @Route("/api/admin/users/delete/{id}", name="admin_delete_user")
      */
     public function removeUser(Request $request)
     {
-        $id = $request->request->get('id');
+        $id = $request->attributes->get('id');
 
         if (!$id) {
             throw new NotFoundHttpException('Unexpected admin post.');
@@ -91,13 +91,16 @@ class AdminController extends AbstractController
             throw new NotFoundHttpException('Unexpected admin post.');
         }
 
-        $this->entityManager->remove($user);
-        $this->entityManager->flush();
-
-        return new JsonResponse([
+        $response = new JsonResponse([
             'email' => $user->getEmail(),
             'firstname' => $user->getLastname(),
             'lastname' => $user->getFirstname(),
+            'id' => $user->getId(),
         ], Response::HTTP_OK);
+
+        $this->entityManager->remove($user);
+        $this->entityManager->flush();
+
+        return $response;
     }
 }

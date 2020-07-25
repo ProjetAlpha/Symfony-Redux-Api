@@ -1,3 +1,5 @@
+import { FormHelperText } from "./Admin/base";
+
 export const pad = {
 
     x_05: {
@@ -60,6 +62,8 @@ export const buttons = {
 
 export const body = theme => ({
     root: {
-        height:'100%'
+        display:'flex',
+        flexDirection: 'column'
     },
+    toolbar: theme.mixins.toolbar,
 })

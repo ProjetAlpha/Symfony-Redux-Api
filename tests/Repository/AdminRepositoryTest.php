@@ -197,7 +197,7 @@ class AdminRepositoryTest extends WebTestCase
 
         $this->assertNotEmpty($user);
 
-        $this->client->request('DELETE', '/api/admin/users/delete', ['id' => $user->getId()], [], []);
+        $this->client->request('DELETE', '/api/admin/users/delete/'.$user->getId(), [], [], []);
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
 

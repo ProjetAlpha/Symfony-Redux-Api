@@ -1,9 +1,12 @@
 export default theme => ({
-    profil: {
-      marginTop: theme.spacing(8),
+    root: {
+      marginTop: theme.spacing(3),
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
+      alignItems: 'center'
+    },
+    profil: {
+      height: '100%'
     },
     avatar: {
       margin: theme.spacing(1),

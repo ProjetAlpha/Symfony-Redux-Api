@@ -1,10 +1,11 @@
+import red from '@material-ui/core/colors/red';
+
 export default theme => ({
     root: {
         display: 'flex',
-        alignItems: 'center',
-        flexDirection:'column',
-        padding: theme.spacing(0, 1),
-        // necessary for content to be below app bar
+        justifyContent:'center',
+        margin: theme.spacing(1),
+        backgroundColor: theme.palette.background.paper,
     },
     toolbar: theme.mixins.toolbar,
     card: {
@@ -18,5 +19,12 @@ export default theme => ({
         flexGrow: 1,
         backgroundColor: theme.palette.background.default,
         padding: theme.spacing(3),
-    }
+    },
+    inline: {
+        display: 'inline',
+    },
+    redIcon: {
+        color: red[500],
+        cursor: 'pointer'
+    },
 })

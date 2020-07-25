@@ -10,34 +10,34 @@ const classes = theme => ({
     root: {
         height: '100%',
         display: 'flex',
-        alignItems:'center',
-        justifyContent:'center',
-        flexDirection:'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
         padding: theme.spacing(0, 1)
     },
     toolbar: theme.mixins.toolbar,
     links: {
-        flexDirection:'row',
-        justifyContent:'space-between',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         maxWidth: '50%'
     },
 });
 
 class NotFound extends React.Component {
-    
+
     render() {
         const classes = this.props.classes;
         return (
-                <div className={classes.root}>
-                    <div className={classes.toolbar} />
-                        <Typography variant="h6">404 NOT FOUND</Typography>
-                        <div className={classes.links}>
-                            <Link to='/'> Home </Link>
-                            <Link to='#' onClick={ () => this.props.history.goBack() }>
-                                Back
+            <div className={classes.root}>
+                <div className={classes.toolbar} />
+                <Typography variant="h6">404 NOT FOUND</Typography>
+                <div className={classes.links}>
+                    <Link to='/'> Home </Link>
+                    <Link to='#' onClick={() => this.props.history.goBack()}>
+                        Back
                             </Link>
-                        </div>
                 </div>
+            </div>
         );
     }
 }

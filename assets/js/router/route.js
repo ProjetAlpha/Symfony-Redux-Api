@@ -36,15 +36,16 @@ class App extends Component {
     const classes = this.props.classes;
 
     return (
-      <div classes={classes.root}>
-          <TopAppBar></TopAppBar>
-          <Switch>
-            <AdminRoute restricted={true} component={Admin} path="/admin" exact />
-            <PublicRoute restricted={true} component={SignIn} path="/" exact />
-            <PublicRoute restricted={true} component={SignUp} path="/register" exact />
-            <PrivateRoute component={ () => <Profil id={ Auth.getUser().id }></Profil> } path="/profil" exact />
-            <Route component={NotFound}/>
-          </Switch>
+      <div className={classes.root}>
+        <div className={classes.toolbar} />
+        <TopAppBar></TopAppBar>
+        <Switch>
+          <AdminRoute restricted={true} component={Admin} path="/admin" exact />
+          <PublicRoute restricted={true} component={SignIn} path="/" exact />
+          <PublicRoute restricted={true} component={SignUp} path="/register" exact />
+          <PrivateRoute component={() => <Profil id={Auth.getUser().id}></Profil>} path="/profil" exact />
+          <Route component={NotFound} />
+        </Switch>
       </div>
     );
   }
