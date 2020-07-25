@@ -19,28 +19,30 @@ class CustomDialog extends React.Component {
         switch (type) {
             case CLOSE:
                 this.props.onClose();
-            break;
+                break;
             case CONFIRMATION:
                 this.props.onConfirmation();
             default:
-                return ;
+                return;
         }
     }
 
     render() {
         const classes = this.props.classes;
         // fullScreen={classes.fullScreen}
+        
         return (
             <div>
                 <UI.Dialog
                     open={this.props.open}
                     onClose={this.handleClick.bind(this, CLOSE)}
                     aria-labelledby="responsive-dialog-title"
+                    className={classes.fullScreen}
                 >
                     <UI.DialogTitle id="responsive-dialog-title">{"Delete this user ?"}</UI.DialogTitle>
                     <UI.DialogContent>
                         <UI.DialogContentText>
-                            Are you sure to delete this user ? - { this.props.text }
+                            Are you sure to delete this user ? - {this.props.text}
                         </UI.DialogContentText>
                     </UI.DialogContent>
                     <UI.DialogActions>
