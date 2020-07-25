@@ -18,6 +18,11 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
+import Divider from '@material-ui/core/Divider';
+import DeleteIcon from '@material-ui/icons/Delete';
+import Icon from '@material-ui/core/Icon';
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
 
 export {
     Alert,
@@ -40,5 +45,10 @@ export {
     ListItemText,
     Card,
     CardContent,
-    CardMedia
+    CardMedia,
+    Divider,
+    Icon,
+    DeleteIcon,
+    Snackbar,
+    MuiAlert
  };

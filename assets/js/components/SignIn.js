@@ -22,7 +22,7 @@ class SignIn extends React.Component {
     }
   }
 
-  handleChange = name => event =>  {
+  handleChange = name => event => {
     this.setState({ [name]: event.target.value });
   }
 
@@ -31,7 +31,7 @@ class SignIn extends React.Component {
       if (nextProps.success) {
         // TODO : user dashboard.
         this.props.history.push(nextProps.user && nextProps.user.isAdmin ? '/admin' : '/profil');
-        
+
         // clear error and reset register success.
         this.props.resetSuccess();
         this.props.clearError();
@@ -63,7 +63,7 @@ class SignIn extends React.Component {
               name="email"
               autoComplete="email"
               autoFocus
-              onChange={ this.handleChange('email').bind(this) }
+              onChange={this.handleChange('email').bind(this)}
             />
             <UI.TextField
               variant="outlined"
@@ -75,24 +75,24 @@ class SignIn extends React.Component {
               type="password"
               id="password"
               autoComplete="current-password"
-              onChange={ this.handleChange('password').bind(this) }
+              onChange={this.handleChange('password').bind(this)}
             />
-            
+
             {
-              getError(this.props) && 
+              getError(this.props) &&
               <UI.Alert severity="error">
                 <UI.AlertTitle>Error</UI.AlertTitle>
-                  { getError(this.props) }
+                {getError(this.props)}
               </UI.Alert>
             }
-            
+
             <UI.Button
               type="submit"
               fullWidth
               variant="contained"
               color="primary"
-              className={ classes.submit }
-              onClick={ this.handleSubmit.bind(this) }
+              className={classes.submit}
+              onClick={this.handleSubmit.bind(this)}
             >
               Sign In
             </UI.Button>

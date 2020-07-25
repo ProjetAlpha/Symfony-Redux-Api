@@ -16,8 +16,9 @@ export const getUsers = () => {
 
 export const removeUserById = id => {
     return dispatch => {
-        client.delete(`${baseUrl}/users/delete`, { id: id }).then(res => {
-        dispatch({ type: 'REMOVE_USER', data: res.data })
+      client.delete(`${baseUrl}/users/delete/${id}`).then(res => {
+        console.log(res);
+          dispatch({ type: 'REMOVE_USER', data: res.data })
       }
       ).catch(err => {
           dispatch({ type: 'ADD_ERROR', error: err.response.data })

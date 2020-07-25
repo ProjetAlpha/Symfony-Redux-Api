@@ -29,6 +29,6 @@ admin_fetch_user:
   methods: GET
 
 admin_delete_user:
-  path: /api/admin/users/delete
+  path: /api/admin/users/delete/{id}
   controller: App\Controller\AdminController::removeUser
   methods: DELETE
