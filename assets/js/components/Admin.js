@@ -7,9 +7,11 @@ import CustomDialog from './main/CustomDialog';
 
 import * as UI from '../UI/Admin/base';
 import Pagination from './main/Pagination';
+import CustomSnackBar from './main/CustomSnackBar';
 import { getUsers, removeUserById } from '../actions/Admin';
 import AdminStyle from '../UI/Admin/style';
 
+// ****** TODO : handle custom dialog and snackbar with redux states ******
 class Admin extends React.Component {
 
     state = {
@@ -37,12 +39,6 @@ class Admin extends React.Component {
         })
     }
 
-    handleSnackBar() {
-        this.setState(prevState => ({
-            triggerSnack: !prevState.triggerSnack
-        }))
-    }
-
     handleDialog(user = {}) {
         this.setState({
             user: user
@@ -52,8 +48,10 @@ class Admin extends React.Component {
         }))
     }
 
-    handleClose() {
-
+    handleSnackBar() {
+        this.setState(prevState => ({
+            triggerSnack: !prevState.triggerSnack
+        }))
     }
 
     render() {
@@ -92,32 +90,20 @@ class Admin extends React.Component {
                         }
                     </UI.List>
                     {
-                        this.state.user && this.state.user.id && <CustomDialog open={this.state.triggerDialog ? true : false}
+                        this.state.user && this.state.user.id &&
+                        <CustomDialog open={this.state.triggerDialog ? true : false}
                             onConfirmation={this.handleDelete.bind(this, this.state.user.id)}
                             onClose={this.handleDialog.bind(this)}
                             text={this.state.user.firstname}
                         />
                     }
-                    <UI.Snackbar open={this.state.triggerSnack}
-                        autoHideDuration={5000}
+                    <CustomSnackBar
+                        open={this.state.triggerSnack ? true : false}
+                        time={5000}
+                        position={{ vertical: 'bottom', horizontal: 'right' }}
+                        message={{error: 'Remove user error !' , success: 'Successfully remove a user !'}}
                         onClose={this.handleSnackBar.bind(this)}
-                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    >
-                    <React.Fragment>
-                       {
-                            !this.props.error &&
-                            <UI.MuiAlert elevation={6} variant="filled" onClose={this.handleSnackBar.bind(this)} severity="success" >
-                                Successfully remove a user !
-                            </UI.MuiAlert>
-                       }
-                       {
-                           this.props.error && 
-                           <UI.MuiAlert elevation={6} variant="filled" onClose={this.handleSnackBar.bind(this)} severity="error" >
-                                Remove user error !
-                           </UI.MuiAlert>
-                       }
-                       </React.Fragment>
-                    </UI.Snackbar>
+                    />
                 </div>
             </UI.Container>
         );

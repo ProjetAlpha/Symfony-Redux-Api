@@ -16,7 +16,8 @@ class SignIn extends React.Component {
     password: ''
   }
 
-  handleSubmit() {
+  handleSubmit(event) {
+    event.preventDefault();
     if (this.state.email !== '' && this.state.password !== '') {
       this.props.login({ email: this.state.email, password: this.state.password });
     }
@@ -52,7 +53,7 @@ class SignIn extends React.Component {
           <UI.Typography component="h1" variant="h5">
             Sign in
           </UI.Typography>
-          <div className={classes.form}>
+          <form className={classes.form} action="#" onSubmit={this.handleSubmit.bind(this)}>
             <UI.TextField
               variant="outlined"
               margin="normal"
@@ -108,7 +109,7 @@ class SignIn extends React.Component {
                 </Link>
               </UI.Grid>
             </UI.Grid>
-          </div>
+          </form>
         </div>
       </UI.Container>
     );

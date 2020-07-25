@@ -19,10 +19,10 @@ class SignUp extends React.Component {
     password: ''
   }
 
-  handleSubmit() {
+  handleSubmit(event) {
+    event.preventDefault();
     if (this.state.email == '' || this.state.password == '' || this.state.firstname == '' || this.state.lastname == '')
       return;
-
     this.props.register({ email: this.state.email, password: this.state.password, firstname: this.state.firstname, lastname: this.state.lastname });
   }
 
@@ -55,7 +55,7 @@ class SignUp extends React.Component {
           <UI.Typography component="h1" variant="h5">
             Sign up
         </UI.Typography>
-          <form className={classes.form} action="javascript:void(0);">
+          <form className={classes.form} onSubmit={this.handleSubmit.bind(this)} action='#'>
             <UI.Grid container spacing={2}>
               <UI.Grid item xs={12} sm={6}>
                 <UI.TextField
