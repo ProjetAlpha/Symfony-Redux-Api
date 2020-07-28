@@ -49,21 +49,29 @@ class TopAppBar extends React.Component {
         <div className={classes.toolbar} />
         <UI.Divider />
         <UI.List>
-          {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-            <UI.ListItem button key={text}>
-              <UI.ListItemIcon>{index % 2 === 0 ? <UI.InboxIcon /> : <UI.MailIcon />}</UI.ListItemIcon>
-              <UI.ListItemText primary={text} />
-            </UI.ListItem>
-          ))}
-        </UI.List>
-        <UI.Divider />
-        <UI.List>
-          {['All mail', 'Trash', 'Spam'].map((text, index) => (
-            <UI.ListItem button key={text}>
-              <UI.ListItemIcon>{index % 2 === 0 ? <UI.InboxIcon /> : <UI.MailIcon />}</UI.ListItemIcon>
-              <UI.ListItemText primary={text} />
-            </UI.ListItem>
-          ))}
+
+          {
+            Auth.isAdmin() && <Link to="/admin">
+              <UI.ListItem button>
+                <UI.ListItemIcon>
+                  <UI.PeopleIcon></UI.PeopleIcon>
+                </UI.ListItemIcon>
+                <UI.ListItemText primary={'Users managment'} />
+              </UI.ListItem>
+            </Link>
+          }
+
+          {
+            Auth.isAdmin() &&
+            <Link to="#">
+              <UI.ListItem button>
+                <UI.ListItemIcon>
+                  <UI.CreateIcon></UI.CreateIcon>
+                </UI.ListItemIcon>
+                <UI.ListItemText primary={'Articles managment'} />
+              </UI.ListItem>
+            </Link>
+          }
         </UI.List>
       </div>
     );
