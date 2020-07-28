@@ -31,7 +31,8 @@ FixCodeStyle.php
 
 ###> symfony/webpack-encore-bundle ###
 /node_modules/
-/public/build/
+# push js production build !
+# /public/build/
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
