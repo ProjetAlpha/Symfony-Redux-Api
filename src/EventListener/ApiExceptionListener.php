@@ -12,7 +12,7 @@ final class ApiExceptionListener
     {
         $exception = $event->getThrowable();
 
-        if (!($exception instanceof HttpException) /*|| false === strpos($event->getRequest()->getRequestUri(), '/api/')*/) {
+        if (!($exception instanceof HttpException) || false === strpos($event->getRequest()->getRequestUri(), '/api/')) {
             return;
         }
 
