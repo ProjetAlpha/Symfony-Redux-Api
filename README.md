@@ -2,4 +2,4 @@
 
 User authentification, admin interface, api fetch / upload / delete with Symfony, PHPunit, Travis and Redux.
 
-See [demo](https://getcomposer.org/doc/00-intro.md).
+See [demo](https://www.universite-pub.site/)
