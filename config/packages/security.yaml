@@ -25,9 +25,8 @@ security:
                 authenticators:
                     - App\Security\AdminAuthenticator
 
-        default:
-            security: false
-            pattern: ^/*
+        # default:
+            # anonymous: lazy
             # provider: app_user_provider
             # logout: 
                 # path: logout

@@ -17,6 +17,8 @@ import InboxIcon from '@material-ui/icons/MoveToInbox';
 import MailIcon from '@material-ui/icons/Mail';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import PeopleIcon from '@material-ui/icons/People';
+import CreateIcon from '@material-ui/icons/Create';
 
 export {
     AppBar,
@@ -37,5 +39,7 @@ export {
     InboxIcon,
     MailIcon,
     ChevronLeftIcon,
-    ChevronRightIcon
+    ChevronRightIcon,
+    PeopleIcon,
+    CreateIcon
 }

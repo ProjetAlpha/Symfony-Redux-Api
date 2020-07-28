@@ -7,8 +7,12 @@ cache:
 warnings_are_errors: false
 services:
     - mysql
+
 php:
     - '7.4'
+
+mysql:
+    - '5.7'
 
 before-install:
     - mysql -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL ON ${DB_NAME}.* TO 'travis'@'localhost' IDENTIFIED BY '${DB_PWD}';"
@@ -24,7 +28,10 @@ install:
     - composer install --prefer-dist --no-interaction --no-progress --no-suggest
     - php bin/console doctrine:database:create --env=travis --if-not-exists
     - php bin/console doctrine:schema:create --env=travis
+    # - php bin/console doctrine:fixtures:load -n --env=test
     #  production setup :
+    # - encore prod
+    # - php bin/console cache:clear --env=prod
     # - php bin/console doctrine:database:create --env=prod --if-not-exists
     # - php bin/console doctrine:schema:create --env=prod
     # - php bin/console make:migration

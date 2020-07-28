@@ -16,8 +16,8 @@ nelmio_cors:
             max_age: 18000 # 3600 * 5 = 18000 <=> 5 hours
         '^/':
             origin_regex: true
-            allow_origin: ['^http://localhost:[0-9]+']
-            allow_headers: ['X-Custom-Auth']
+            allow_origin: ['%env(CLIENT_BASEURL)%']
+            allow_headers: ['X-Requested-With', 'Content-Type']
             allow_methods: ['POST', 'PUT', 'GET', 'DELETE']
             max_age: 3600
             hosts: ['^api\.']

@@ -5,7 +5,7 @@ const drawerWidth = 250;
 
 export default theme => ({
     root: {
-      flexGrow: 1
+      /*flexGrow: 1*/
     },
     drawer: {
       [theme.breakpoints.up('sm')]: {
@@ -18,7 +18,6 @@ export default theme => ({
       width: drawerWidth,
     },
     appBar: {
-      zIndex: theme.zIndex.drawer + 1,
       backgroundColor:colors.lightBlue2,
       [theme.breakpoints.up('sm')]: {
         width: `calc(100% - ${drawerWidth}px)`,
