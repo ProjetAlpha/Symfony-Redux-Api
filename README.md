@@ -2,4 +2,4 @@
 
 User authentification, admin interface, api fetch / upload / delete with Symfony, PHPunit, Travis and Redux.
 
-See [demo](https://www.universite-pub.site/)
+See [demo](https://www.universite-pub.site/) (fully configured VPS & automated symfony deployment with php deployer).
