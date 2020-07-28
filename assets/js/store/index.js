@@ -5,6 +5,8 @@ import reducers from '../reducers/index';
 
 // TODO: axios interceptors when credentials expire => delete localstorage user.
 
-export default createStore(reducers, composeWithDevTools(
+export default process.env.NODE_ENV == 'production' 
+    ? createStore(reducers, applyMiddleware(thunk))
+    : createStore(reducers, composeWithDevTools(
   applyMiddleware(thunk)
 ));
