@@ -102,7 +102,7 @@ class RegistrationController extends AbstractController
             'user' => $user,
             'link' => $link,
             'message' => $this->getEmailMessage($type, 'confirmation'),
-        ],
+            ],
             $type
         );
 
@@ -203,7 +203,7 @@ class RegistrationController extends AbstractController
             'user' => $user,
             'link' => $link,
             'message' => $this->getEmailMessage($type, 'reset'),
-        ],
+            ],
             $type
         );
 

@@ -106,7 +106,7 @@ class ApiController extends AbstractController
             'user' => $user,
             'link' => $link,
             'message' => $this->getEmailMessage($type, $messageId),
-        ],
+            ],
             $type
         );
 
