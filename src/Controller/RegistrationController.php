@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Security\UserSession;
 use App\Services\Normalize;
+use App\Traits\EmailMessage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,6 +20,11 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class RegistrationController extends AbstractController
 {
+    /*
+     * Api email message manager.
+     */
+    use EmailMessage;
+
     /**
      * @var EntityManagerInterface
      */
@@ -34,11 +40,12 @@ class RegistrationController extends AbstractController
      */
     private $normalize;
 
-    public function __construct(EntityManagerInterface $entityManager, ValidatorInterface $validator, Normalize $normalize)
+    public function __construct(EntityManagerInterface $entityManager, ValidatorInterface $validator, Normalize $normalize, \Swift_Mailer $mailer)
     {
         $this->entityManager = $entityManager;
         $this->validator = $validator;
         $this->normalize = $normalize;
+        $this->setMailer($mailer);
     }
 
     /**
@@ -67,6 +74,11 @@ class RegistrationController extends AbstractController
         $user->setApiToken($params['api_token'] ?? bin2hex(random_bytes(32)));
         $user->setRoles(['ROLE_USER', 'ROLE_API_USER']);
 
+        $link = bin2hex(random_bytes(32));
+
+        $user->setConfirmationLink($link);
+        $user->setConfirmationLinkTimeout(time() + 24 * 60 * 60);
+
         // check if email is unique and if password and email are valid.
         $errors = $this->validator->validate($user);
 
@@ -78,10 +90,166 @@ class RegistrationController extends AbstractController
             return new JsonResponse($messages, Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        // send a confirmation link
+        $subject = "Confirmation de la création d'un nouveau compte";
+        $type = 'link';
+        $this->processMail(
+            'noreply@universite-pub.site',
+            $user->getEmail(),
+            $subject,
+            [
+            'subject' => $subject,
+            'user' => $user,
+            'link' => $link,
+            'message' => $this->getEmailMessage($type, 'confirmation'),
+        ],
+            $type
+        );
+
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        return new JsonResponse('Register Sucess!', Response::HTTP_CREATED);
+        return new JsonResponse('Register Success!', Response::HTTP_CREATED);
+    }
+
+    /**
+     * @Route("/api/register/confirmation/{id}", name="account_confirmation")
+     */
+    public function confirmAccount(Request $request): JsonResponse
+    {
+        $param = $request->attributes->get('id');
+
+        if (!isset($param)) {
+            throw new BadRequestHttpException('Bad request input.');
+        }
+
+        $user = $this->entityManager
+        ->getRepository(User::class)
+        ->findOneBy(['confirmation_link' => $param]);
+
+        if (!$user || null === $user->getConfirmationLinkTimeout()) {
+            throw new NotFoundHttpException('Unexpected user.');
+        }
+
+        if (time() > $user->getConfirmationLinkTimeout()) {
+            return new JsonResponse(['error' => 'This confirmation link is expired.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $user->setConfirmationLink(null);
+        $user->setConfirmationLinkTimeout(null);
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return new JsonResponse('Your account is now activated.', Response::HTTP_OK);
+    }
+
+    /**
+     * @Route("/api/public/reset/password/{id}", name="reset_password_link")
+     */
+    public function resetPasswordLink(Request $request): JsonResponse
+    {
+        $param = $request->attributes->get('id');
+
+        if (!isset($param)) {
+            throw new BadRequestHttpException('Bad request input.');
+        }
+
+        $user = $this->entityManager
+        ->getRepository(User::class)
+        ->findOneBy(['reset_link' => $param]);
+
+        if (!$user || null === $user->getResetLinkTimeout()) {
+            throw new NotFoundHttpException('Unexpected user.');
+        }
+
+        if (time() > $user->getResetLinkTimeout()) {
+            return new JsonResponse(['error' => 'This reset link is expired.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return new JsonResponse(['link' => $user->getResetLink()], Response::HTTP_OK);
+    }
+
+    /**
+     * @Route("/api/public/reset/send", name="send_reset_password_link")
+     */
+    public function sendResetPasswordLink(Request $request, \Swift_Mailer $mailer): JsonResponse
+    {
+        $email = $request->request->get('email');
+
+        if (!$email) {
+            throw new BadRequestHttpException('Unexpected request input.');
+        }
+
+        $user = $this->entityManager
+        ->getRepository(User::class)
+        ->findOneBy(['email' => $email]);
+
+        // TODO : security.
+        if (!$user) {
+            throw new NotFoundHttpException('Unexpected user.');
+        }
+
+        $link = bin2hex(random_bytes(32));
+
+        // swift mailer use a custom smtp server
+        $subject = 'Réinitialiser le mot de passe';
+        $type = 'link';
+        $this->processMail(
+            'noreply@universite-pub.site',
+            $user->getEmail(),
+            $subject,
+            [
+            'subject' => $subject,
+            'user' => $user,
+            'link' => $link,
+            'message' => $this->getEmailMessage($type, 'reset'),
+        ],
+            $type
+        );
+
+        $user->setResetLink($link);
+        $user->setResetLinkTimeout(time() + 24 * 60 * 60);
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return new JsonResponse(['message' => 'Mail successfully sent.'], Response::HTTP_OK);
+    }
+
+    /**
+     * @Route("/api/public/reset/password/{id}/confirm", name="reset_password")
+     */
+    public function resetPassword(Request $request, UserPasswordEncoderInterface $encoder)
+    {
+        $linkId = $request->attributes->get('id');
+        $password = $request->request->get('password');
+
+        if (!$linkId || !$password) {
+            throw new BadRequestHttpException('Bad request input.');
+        }
+
+        $user = $this->entityManager
+        ->getRepository(User::class)
+        ->findOneBy(['reset_link' => $linkId]);
+
+        if (!$user || null === $user->getResetLinkTimeout()) {
+            throw new NotFoundHttpException('Unexpected user.');
+        }
+
+        if (time() > $user->getResetLinkTimeout()) {
+            return new JsonResponse(['error' => 'This reset link is expired.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $newPassword = $encoder->encodePassword($user, $password);
+        $user->setPassword($newPassword);
+
+        $user->setResetLink(null);
+        $user->setResetLinkTimeout(null);
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return new JsonResponse(['message' => 'Password reset success.'], Response::HTTP_OK);
     }
 
     /**

@@ -32,3 +32,23 @@ admin_delete_user:
   path: /api/admin/users/delete/{id}
   controller: App\Controller\AdminController::removeUser
   methods: DELETE
+
+reset_password_link:
+  path: /api/public/reset/password/{id}
+  controller: App\Controller\RegistrationController::resetPasswordLink
+  methods: GET
+
+account_confirmation:
+  path: /api/register/confirmation/{id}
+  controller: App\Controller\RegistrationController::confirmAccount
+  methods: GET
+
+send_reset_password_link:
+  path: /api/public/reset/send
+  controller: App\Controller\RegistrationController::sendResetPasswordLink
+  methods: POST
+
+reset_password:
+  path: /api/public/reset/password/{id}/confirm
+  controller: App\Controller\RegistrationController::resetPassword
+  methods: POST

@@ -60,6 +60,26 @@ class User implements UserInterface
      */
     private $is_admin;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $confirmation_link;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $confirmation_link_timeout;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $reset_link;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $reset_link_timeout;
+
     public function __construct()
     {
         $this->images = new ArrayCollection();
@@ -218,6 +238,54 @@ class User implements UserInterface
     public function setIsAdmin(?bool $is_admin): self
     {
         $this->is_admin = $is_admin;
+
+        return $this;
+    }
+
+    public function getConfirmationLink(): ?string
+    {
+        return $this->confirmation_link;
+    }
+
+    public function setConfirmationLink(?string $confirmation_link): self
+    {
+        $this->confirmation_link = $confirmation_link;
+
+        return $this;
+    }
+
+    public function getConfirmationLinkTimeout(): ?int
+    {
+        return $this->confirmation_link_timeout;
+    }
+
+    public function setConfirmationLinkTimeout(?int $confirmation_link_timeout): self
+    {
+        $this->confirmation_link_timeout = $confirmation_link_timeout;
+
+        return $this;
+    }
+
+    public function getResetLink(): ?string
+    {
+        return $this->reset_link;
+    }
+
+    public function setResetLink(?string $reset_link): self
+    {
+        $this->reset_link = $reset_link;
+
+        return $this;
+    }
+
+    public function getResetLinkTimeout(): ?int
+    {
+        return $this->reset_link_timeout;
+    }
+
+    public function setResetLinkTimeout(?int $reset_link_timeout): self
+    {
+        $this->reset_link_timeout = $reset_link_timeout;
 
         return $this;
     }

@@ -2,9 +2,9 @@ import red from '@material-ui/core/colors/red';
 
 export default theme => ({
     root: {
-        display: 'flex',
-        justifyContent:'center',
-        margin: theme.spacing(1),
+        //display: 'flex',
+        //justifyContent:'center',
+        margin: theme.spacing(2),
         backgroundColor: theme.palette.background.paper,
     },
     toolbar: theme.mixins.toolbar,

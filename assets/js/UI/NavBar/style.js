@@ -51,10 +51,11 @@ export default theme => ({
         color: '#ffffff',
         TextDecoration: "inherit" 
     },
+    drawerContainer: {
+      width : '100%',
+    },
     rightSideContainer: {
-      display:'flex',
-      alignItems:'center',
-      justifyContent:'space-between'
+      marginLeft:'auto'
     },
     buttonGreen: {
       ...buttons.green(theme)

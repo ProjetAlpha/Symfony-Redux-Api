@@ -17,6 +17,7 @@ class Pagination extends React.Component {
     let n = (dataLength / maxItem);
     const isFloat = Number(n) === n && n % 1 !== 0;
     n += isFloat ? 1 : 0;
+    // faster Math.round(x)
     n = ~~n;
 
     return n;
