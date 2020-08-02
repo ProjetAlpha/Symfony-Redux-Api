@@ -15,7 +15,7 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         api:
-            pattern: ^/api/(?!login|register|admin)
+            pattern: ^/api/(?!login|register|admin|public)
             guard:
                 authenticators:
                     - App\Security\TokenAuthenticator

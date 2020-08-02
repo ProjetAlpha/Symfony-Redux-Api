@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Image;
 use App\Entity\User;
+use App\Traits\EmailMessage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,6 +18,11 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ApiController extends AbstractController
 {
+    /*
+     * Api email message manager.
+     */
+    use EmailMessage;
+
     /**
      * @var EntityManagerInterface
      */
@@ -27,10 +33,11 @@ class ApiController extends AbstractController
      */
     private $validator;
 
-    public function __construct(EntityManagerInterface $entityManager, ValidatorInterface $validator)
+    public function __construct(EntityManagerInterface $entityManager, ValidatorInterface $validator, \Swift_Mailer $mailer)
     {
         $this->entityManager = $entityManager;
         $this->validator = $validator;
+        $this->setMailer($mailer);
     }
 
     /**
@@ -63,6 +70,47 @@ class ApiController extends AbstractController
         }
 
         return new JsonResponse(['email' => $user->getEmail(), 'api_token' => $user->getApiToken()], 200);
+    }
+
+    /**
+     * @Route("/api/public/mail/send", name="send_mail")
+     */
+    public function sendMail(Request $request, \Swift_Mailer $mailer): JsonResponse
+    {
+        $email = $request->request->get('email');
+        $type = $request->request->get('type');
+        $messageId = $request->request->get('messageId');
+        $subject = $request->request->get('subject');
+
+        if (!$email || !$type || !$subject) {
+            throw new BadRequestHttpException('Unexpected request input.');
+        }
+
+        $user = $this->entityManager
+        ->getRepository(User::class)
+        ->findOneBy(['email' => $email]);
+
+        if (!$user || null !== $user->getResetLinkConfirmation()) {
+            throw new NotFoundHttpException('Unexpected user.');
+        }
+
+        $link = bin2hex(random_bytes(32));
+
+        // swift mailer use a custom smtp server
+        $this->processMail(
+            'noreply@universite-pub.site',
+            $user->getEmail(),
+            $subject,
+            [
+            'subject' => $subject,
+            'user' => $user,
+            'link' => $link,
+            'message' => $this->getEmailMessage($type, $messageId),
+            ],
+            $type
+        );
+
+        return new JsonResponse(['message' => 'Mail successfully sent.'], Response::HTTP_OK);
     }
 
     /**
@@ -197,14 +245,6 @@ class ApiController extends AbstractController
                 }
             }
         } else {
-            /*
-                $image = $entityManager
-                ->getRepository(User::class)
-                ->findOneBy(['id' => $imageId]);
-                $user->removeImage($image);
-                $entityManager->remove($image);
-                if (file_exists($image->getPath())) unlink($image->getPath());
-            */
             foreach ($user->getImages() as $image) {
                 if ($imageId == $image->getId()) {
                     $user->removeImage($image);

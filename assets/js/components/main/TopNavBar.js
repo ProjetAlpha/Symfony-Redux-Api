@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import * as Auth from '../../utils/Authentification';
 import * as UI from '../../UI/NavBar/base';
 
+import DrawerContent from './Drawer';
 import NavBarStyle from '../../UI/NavBar/style';
 import { logout } from '../../actions/Authentification';
 import { makeStyles, withStyles, withTheme } from '@material-ui/core/styles';
@@ -39,40 +40,14 @@ class TopAppBar extends React.Component {
     const classes = this.props.classes;
     const container = window !== undefined ? () => window.document.body : undefined;
 
-    const drawer = (
-      <div>
+    const drawerContent = (
+      <div className={classes.drawerContainer}>
         <div className={classes.drawerHeader}>
           <UI.IconButton onClick={this.handleDrawerToggle.bind(this)}>
             {this.props.theme.direction === 'ltr' ? <UI.ChevronLeftIcon /> : <UI.ChevronRightIcon />}
           </UI.IconButton>
         </div>
-        <div className={classes.toolbar} />
-        <UI.Divider />
-        <UI.List>
-
-          {
-            Auth.isAdmin() && <Link to="/admin">
-              <UI.ListItem button>
-                <UI.ListItemIcon>
-                  <UI.PeopleIcon></UI.PeopleIcon>
-                </UI.ListItemIcon>
-                <UI.ListItemText primary={'Users managment'} />
-              </UI.ListItem>
-            </Link>
-          }
-
-          {
-            Auth.isAdmin() &&
-            <Link to="#">
-              <UI.ListItem button>
-                <UI.ListItemIcon>
-                  <UI.CreateIcon></UI.CreateIcon>
-                </UI.ListItemIcon>
-                <UI.ListItemText primary={'Articles managment'} />
-              </UI.ListItem>
-            </Link>
-          }
-        </UI.List>
+        <DrawerContent></DrawerContent>
       </div>
     );
 
@@ -85,9 +60,10 @@ class TopAppBar extends React.Component {
             <UI.IconButton edge="start" className={clsx(classes.menuButton, (this.state.desktopOpen || this.state.mobileOpen) && classes.hide)} color="inherit" aria-label="menu" onClick={this.handleDrawerToggle.bind(this)}>
               <UI.MenuIcon />
             </UI.IconButton>
-            <UI.Typography variant="h6" className={classes.title}>
+            { /*<UI.Typography variant="h6" className={classes.title}>
               <Link className={classes.link} to="/">Home</Link>
-            </UI.Typography>
+              </UI.Typography>*/
+            }
 
             <div className={classes.rightSideContainer}>
               {
@@ -111,13 +87,15 @@ class TopAppBar extends React.Component {
                 </Link>
               }
 
-              <UI.IconButton
-                edge="end"
-                aria-label="settings of current user"
-                color="inherit"
-              >
-                <UI.SettingsIcon />
-              </UI.IconButton>
+              {
+                /*<UI.IconButton
+                  edge="end"
+                  aria-label="settings of current user"
+                  color="inherit"
+                >
+                  <UI.SettingsIcon />
+                </UI.IconButton>*/
+              }
             </div>
           </UI.Toolbar>
         </UI.AppBar>
@@ -137,7 +115,7 @@ class TopAppBar extends React.Component {
                 keepMounted: true, // Better open performance on mobile.
               }}
             >
-              {drawer}
+              {drawerContent}
             </UI.Drawer>
           </UI.Hidden>
           <UI.Hidden xsDown implementation="css">
@@ -149,7 +127,7 @@ class TopAppBar extends React.Component {
               variant="persistent"
               open={this.state.desktopOpen}
             >
-              {drawer}
+              {drawerContent}
             </UI.Drawer>
           </UI.Hidden>
         </nav>

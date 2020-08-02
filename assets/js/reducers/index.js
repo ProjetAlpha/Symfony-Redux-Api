@@ -5,11 +5,13 @@ import Authentification from './Authentification';
 import Error from './Error';
 import Profil from './Profil';
 import Admin from './Admin';
+import Drawer from './main/Drawer';
 
 export default combineReducers({
   Authentification,
   Image,
   Error,
   Profil,
-  Admin
+  Admin,
+  Drawer
 });

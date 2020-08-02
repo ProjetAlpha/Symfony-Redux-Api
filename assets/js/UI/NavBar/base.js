@@ -19,6 +19,8 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import PeopleIcon from '@material-ui/icons/People';
 import CreateIcon from '@material-ui/icons/Create';
+import HomeIcon from '@material-ui/icons/Home';
+import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 
 export {
     AppBar,
@@ -41,5 +43,7 @@ export {
     ChevronLeftIcon,
     ChevronRightIcon,
     PeopleIcon,
-    CreateIcon
+    CreateIcon,
+    HomeIcon,
+    AccountCircleIcon
 }

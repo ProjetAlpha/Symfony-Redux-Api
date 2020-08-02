@@ -1,1 +1,0 @@
-:root{--barpad:240px;--screenHeight:100%}#root{background-color:#f5f5f5}@media screen and (min-width:600px){body{padding-left:var(--barpad)}}@media screen and (max-width:600px){body{padding-left:0}}body,html{background-color:#f5f5f5!important;height:100%}
