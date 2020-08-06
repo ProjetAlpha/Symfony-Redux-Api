@@ -90,17 +90,18 @@ class RegistrationController extends AbstractController
             return new JsonResponse($messages, Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        // send a confirmation link
         $subject = "Confirmation de la création d'un nouveau compte";
         $type = 'link';
+        $mailTarget = $this->getEmailUrl($link, '/register/confirmation');
+
         $this->processMail(
-            'noreply@universite-pub.site',
+            'gmonacho@universite-pub.site',
             $user->getEmail(),
             $subject,
             [
             'subject' => $subject,
             'user' => $user,
-            'link' => $link,
+            'link' => $mailTarget,
             'message' => $this->getEmailMessage($type, 'confirmation'),
             ],
             $type
@@ -109,7 +110,9 @@ class RegistrationController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        return new JsonResponse('Register Success!', Response::HTTP_CREATED);
+        return new JsonResponse([
+            'confirmationLink' => $link,
+        ], Response::HTTP_CREATED);
     }
 
     /**
@@ -146,7 +149,7 @@ class RegistrationController extends AbstractController
     /**
      * @Route("/api/public/reset/password/{id}", name="reset_password_link")
      */
-    public function resetPasswordLink(Request $request): JsonResponse
+    public function resetPasswordLink(Request $request)
     {
         $param = $request->attributes->get('id');
 
@@ -159,11 +162,11 @@ class RegistrationController extends AbstractController
         ->findOneBy(['reset_link' => $param]);
 
         if (!$user || null === $user->getResetLinkTimeout()) {
-            throw new NotFoundHttpException('Unexpected user.');
+            throw new NotFoundHttpException('Reset link is expired.');
         }
 
         if (time() > $user->getResetLinkTimeout()) {
-            return new JsonResponse(['error' => 'This reset link is expired.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return new JsonResponse(['error' => 'Reset link is expired.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         return new JsonResponse(['link' => $user->getResetLink()], Response::HTTP_OK);
@@ -190,18 +193,18 @@ class RegistrationController extends AbstractController
         }
 
         $link = bin2hex(random_bytes(32));
-
-        // swift mailer use a custom smtp server
+        $mailTarget = $this->getEmailUrl($link, '/resetPassword/link/');
         $subject = 'Réinitialiser le mot de passe';
         $type = 'link';
+
         $this->processMail(
-            'noreply@universite-pub.site',
+            'gmonacho@universite-pub.site',
             $user->getEmail(),
             $subject,
             [
             'subject' => $subject,
             'user' => $user,
-            'link' => $link,
+            'link' => $mailTarget,
             'message' => $this->getEmailMessage($type, 'reset'),
             ],
             $type
@@ -288,6 +291,7 @@ class RegistrationController extends AbstractController
                 'firstname' => $user->getFirstname(),
                 'lastname' => $user->getLastname(),
                 'isAdmin' => $user->getIsAdmin(),
+                'isConfirmed' => null === $user->getConfirmationLink(),
             ], Response::HTTP_OK);
         }
 

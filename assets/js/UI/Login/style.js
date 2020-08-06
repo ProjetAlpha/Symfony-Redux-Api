@@ -5,6 +5,11 @@ export default theme => ({
       flexDirection: 'column',
       alignItems: 'center',
     },
+    center: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent:'center'
+    },
     avatar: {
       margin: theme.spacing(1),
       backgroundColor: theme.palette.secondary.main,

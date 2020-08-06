@@ -2,6 +2,8 @@
 
 namespace App\Traits;
 
+use Exception;
+
 trait EmailMessage
 {
     /**
@@ -32,6 +34,23 @@ trait EmailMessage
      */
     public function setMailer($mailer)
     {
+        // Create the Transport
+        $transport = (new \Swift_SmtpTransport($_ENV['MAILER_SMTP'], $_ENV['MAILER_PORT'], $_ENV['MAILER_ENCRYPTION']))
+        ->setUsername($_ENV['MAILER_USERNAME'])
+        ->setPassword($_ENV['MAILER_PWD']);
+
+        // stream options is required for localhost self signed certificates
+        if ($transport instanceof \Swift_Transport_EsmtpTransport
+                && isset($_ENV['APP_ENV']) && ('dev' == $_ENV['APP_ENV'] || 'test' == $_ENV['APP_ENV'])) {
+            $transport->setStreamOptions([
+                'ssl' => ['allow_self_signed' => true,
+                'verify_peer' => false,
+                'verify_peer_name' => false, ],
+                ]);
+        }
+
+        // Create the Mailer using your created Transport
+        $mailer = new \Swift_Mailer($transport);
         $this->mailer = $mailer;
     }
 
@@ -56,6 +75,17 @@ trait EmailMessage
         return $this->messages[$type][$messageId];
     }
 
+    /**
+     * Use a smtp server to send an html message. Swift mailer use a custom vps smtp server.
+     *
+     * @param $from
+     * @param $to
+     * @param $subject
+     * @param $data
+     * @param $type
+     *
+     * @return void
+     */
     public function processMail($from, $to, $subject, $data, $type = null)
     {
         $view = 'emails/'.($type ? $type : 'link').'.html.twig';
@@ -67,10 +97,25 @@ trait EmailMessage
                 // templates/emails/type.html.twig
                 $view,
                 $data
-            )
+            ),
+            'text/html'
         );
 
-        // swift mailer use a custom stmp server
-        $this->mailer->send($message);
+        try {
+            $success = $this->mailer->send($message);
+
+            if (!$success) {
+                throw new Exception('SwiftMailer unexpected error.');
+            }
+        } catch (\Swift_TransportException $e) {
+            throw new Exception($e->getMessage());
+        } catch (\Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function getEmailUrl($link, $url)
+    {
+        return $_ENV['CLIENT_BASEURL'].$url.$link;
     }
 }

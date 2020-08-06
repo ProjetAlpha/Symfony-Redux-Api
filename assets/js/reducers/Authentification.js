@@ -9,7 +9,7 @@ export default function Authentification(state = initialState, action = {}) {
     case 'LOGIN': {
       return {
         ...state,
-        user: action.data,
+        user: state.user ? {...state.user, ...action.data} : action.data,
         success: true
       }
     }
@@ -24,6 +24,7 @@ export default function Authentification(state = initialState, action = {}) {
     case 'REGISTER': {
       return {
         ...state,
+        user: state.user ? {...state.user, ...action.data} : action.data,
         success: true
       }
     }
