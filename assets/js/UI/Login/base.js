@@ -10,6 +10,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import FormHelperText from '@material-ui/core/FormHelperText';
+import MailIcon from '@material-ui/icons/Mail';
 import { Alert, AlertTitle } from '@material-ui/lab';
 
 export {
@@ -26,5 +27,6 @@ export {
     Grid,
     LockOutlinedIcon,
     Typography,
-    Container
+    Container,
+    MailIcon
  };

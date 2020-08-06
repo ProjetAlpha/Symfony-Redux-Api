@@ -1,3 +1,5 @@
+import { LOCATION_CHANGE } from 'connected-react-router';
+
 const initialState = {
   error: null
 };
@@ -14,6 +16,9 @@ export default function Error(state = initialState, action) {
       case 'CLEAR_ERROR':
         return initialState;
   
+      case LOCATION_CHANGE:
+        return initialState;
+
       default:
         return state;
     }

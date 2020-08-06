@@ -10,17 +10,23 @@ export const isAdmin = () => {
 
 export const setUser = (user) => {
     if (!localStorage.getItem('user') || localStorage.getItem('user') == 'null'){
-       localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('user', JSON.stringify(user));
     }
-    else
-        return null;
+    else {
+        const user = { ...JSON.parse(localStorage.getItem('user')), ...user };
+        localStorage.setItem('user', JSON.stringify(user));
+    }
 }
 
-export const getUser = () => {
+export const getUser = (key = false) => {
     if (!isLogin()) {
         return false;
     }
     
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (key && user.hasOwnProperty(key))
+        return user[key];
+
     return JSON.parse(localStorage.getItem('user'));
 }
 
@@ -28,7 +34,7 @@ export const logout = () => {
     if (localStorage.getItem('user')) {
         localStorage.removeItem('user');
     }
-    else
+    else 
         return null;
 }
 

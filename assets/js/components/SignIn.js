@@ -99,7 +99,7 @@ class SignIn extends React.Component {
             </UI.Button>
             <UI.Grid container>
               <UI.Grid item xs>
-                <Link to="#" variant="body2">
+                <Link to="/resetPassword" variant="body2">
                   Forgot password?
                 </Link>
               </UI.Grid>

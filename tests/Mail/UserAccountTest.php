@@ -121,6 +121,12 @@ class UserAccountTest extends WebTestCase
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
 
+        // config/packages/test/web_profiler.yaml - profiler: { enabled: true, collect: true }
+        // $mailCollector = $this->client->getProfile()->getCollector('swiftmailer');
+
+        // checks that an email was sent
+        // $this->assertSame(1, $mailCollector->getMessageCount());
+
         $userRepository = static::$container->get(UserRepository::class);
 
         $user = $userRepository->findOneBy(['email' => $email]);

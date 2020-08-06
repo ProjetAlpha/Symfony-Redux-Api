@@ -1,11 +1,3 @@
-/*
- * Welcome to your app's main JavaScript file!
- *
- * We recommend including the built version of this JavaScript file
- * (and its CSS file) in your base layout (base.html.twig).
- */
-
-// any CSS you import will output into a single css file (app.css in this case)
 import '../../css/app.css';
 import React, { Component, PropTypes } from 'react';
 import TopAppBar from '../components/main/TopNavBar';
@@ -19,6 +11,9 @@ import SignIn from '../components/SignIn';
 import SignUp from '../components/SignUp';
 import Profil from '../components/Profil';
 import Admin from '../components/Admin';
+import ResetPassword from '../components/ResetPassword';
+import ResetPasswordLink from '../components/ResetPasswordLink';
+
 import NotFound from '../components/main/NotFound';
 import { withStyles } from '@material-ui/core/styles';
 import { withRouter } from 'react-router-dom';
@@ -41,8 +36,12 @@ class App extends Component {
         <TopAppBar></TopAppBar>
         <Switch>
           <AdminRoute restricted={true} component={Admin} path="/admin" exact />
+          
           <PublicRoute restricted={true} component={SignIn} path="/" exact />
           <PublicRoute restricted={true} component={SignUp} path="/register" exact />
+          <PublicRoute restricted={true} component={ResetPassword} path="/resetPassword" exact />
+          <PublicRoute restricted={true} component={ResetPasswordLink} path="/resetPassword/link/:id" exact />
+          
           <PrivateRoute component={() => <Profil id={Auth.getUser().id}></Profil>} path="/profil" exact />
           <Route component={NotFound} />
         </Switch>
