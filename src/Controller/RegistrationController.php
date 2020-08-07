@@ -99,11 +99,11 @@ class RegistrationController extends AbstractController
             $user->getEmail(),
             $subject,
             [
-            'subject' => $subject,
-            'user' => $user,
-            'link' => $mailTarget,
-            'message' => $this->getEmailMessage($type, 'confirmation'),
-            ],
+                'subject' => $subject,
+                'user' => $user,
+                'link' => $mailTarget,
+                'message' => $this->getEmailMessage($type, 'confirmation'),
+                ],
             $type
         );
 

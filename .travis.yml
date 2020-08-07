@@ -46,7 +46,7 @@ script:
   
 # print logs
 after_failure:
-  - cat ./var/log/test.log
+  - cat ./var/log/*.log
 
 # after_success:
    # - bash <(curl -s https://codecov.io/bash)
