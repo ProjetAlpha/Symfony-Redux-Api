@@ -95,16 +95,16 @@ class RegistrationController extends AbstractController
         $mailTarget = $this->getEmailUrl($link, '/register/confirmation');
 
         $this->processMail(
-            'gmonacho@universite-pub.site',
-            $user->getEmail(),
-            $subject,
-            [
-            'subject' => $subject,
-            'user' => $user,
-            'link' => $mailTarget,
-            'message' => $this->getEmailMessage($type, 'confirmation'),
-            ],
-            $type
+                'gmonacho@universite-pub.site',
+                $user->getEmail(),
+                $subject,
+                [
+                'subject' => $subject,
+                'user' => $user,
+                'link' => $mailTarget,
+                'message' => $this->getEmailMessage($type, 'confirmation'),
+                ],
+                $type
         );
 
         $this->entityManager->persist($user);

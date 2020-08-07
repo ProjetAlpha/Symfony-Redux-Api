@@ -88,6 +88,11 @@ trait EmailMessage
      */
     public function processMail($from, $to, $subject, $data, $type = null)
     {
+        // dont send email with unit test : slow and security reason.
+        if ('test' === $_ENV['APP_ENV'] || 'travis' === $_ENV['APP_ENV']) {
+            return;
+        }
+
         $view = 'emails/'.($type ? $type : 'link').'.html.twig';
         $message = (new \Swift_Message($subject))
         ->setFrom($from)
