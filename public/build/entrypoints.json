@@ -2,13 +2,13 @@
   "entrypoints": {
     "app": {
       "js": [
-        "http://localhost:9000/build/runtime.js",
-        "http://localhost:9000/build/vendors~app.js",
-        "http://localhost:9000/build/app.js"
+        "/build/runtime.d94b3b43.js",
+        "/build/0.a39ce826.js",
+        "/build/app.8cf414b1.js"
       ],
       "css": [
-        "http://localhost:9000/build/vendors~app.css",
-        "http://localhost:9000/build/app.css"
+        "/build/0.18d16727.css",
+        "/build/app.0f20de16.css"
       ]
     }
   }
