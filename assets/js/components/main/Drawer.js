@@ -27,8 +27,15 @@ drawerContent[Constant.ADMIN].push({
     type: Constant.ADMIN,
     icon: <UI.CreateIcon></UI.CreateIcon>,
     primary: 'Articles',
-    route: '/admin'
+    route: '/articles'
 });
+
+drawerContent[Constant.ADMIN].push({
+    type: Constant.ADMIN,
+    icon: <UI.AddCircleIcon></UI.AddCircleIcon>,
+    primary: 'New article',
+    route: '/articles/new'
+})
 
 drawerContent[Constant.USER].push({
     type: Constant.USER,

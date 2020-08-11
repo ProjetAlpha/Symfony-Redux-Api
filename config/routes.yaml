@@ -14,3 +14,7 @@ user_routes:
 api_routes:
   resource: './routes/ApiRouter'
   type:     directory
+
+article_routes:
+  resource: './routes/ArticleRouter'
+  type:     directory

@@ -40,8 +40,9 @@ class Pagination extends React.Component {
                 {
                   this.props.data
                   && this.props.render
+                  && Array.isArray(this.props.data)
                   && this.props.data.slice(start, start + this.props.maxItem).map((item, index) => (
-                    this.props.render(item, index)
+                    this.props.render(item, index, start + index)
                   ))
                 }
                 <div className={classes.pagination}>

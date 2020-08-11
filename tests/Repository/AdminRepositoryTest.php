@@ -10,6 +10,13 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 class AdminRepositoryTest extends WebTestCase
 {
     /**
+     * Html sample.
+     *
+     * @var string
+     */
+    protected $htmlSample;
+
+    /**
      * Client request.
      *
      * @var
@@ -54,6 +61,7 @@ class AdminRepositoryTest extends WebTestCase
         $encoder = null;
 
         $this->client = static::createClient();
+        $this->htmlSample = '<html><body><p>Hello World</p></body></html>';
     }
 
     /**
@@ -78,6 +86,29 @@ class AdminRepositoryTest extends WebTestCase
         $this->admin = $user;
         $this->em->persist($user);
         $this->em->flush();
+    }
+
+    /**
+     * Create a random admin article.
+     *
+     * @return int $articleId
+     */
+    private function createArticle($isDraft = false)
+    {
+        UserHelper::loginUser($this->client, $this->admin->getEmail(), $this->originalPassword);
+
+        $adminId = $this->admin->getId();
+
+        $this->client->request('POST', '/api/admin/'.$adminId.'/articles/create', [
+            'is_draft' => $isDraft,
+            'raw_data' => $this->htmlSample,
+        ], [], []);
+
+        $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
+
+        $jsonResponse = UserHelper::assertJsonResponse($this->client, 'id');
+
+        return $jsonResponse['id'];
     }
 
     /**
@@ -197,7 +228,9 @@ class AdminRepositoryTest extends WebTestCase
 
         $this->assertNotEmpty($user);
 
-        $this->client->request('DELETE', '/api/admin/users/delete/'.$user->getId(), [], [], []);
+        $this->client->request('DELETE', '/api/admin/users/delete/'.$user->getId(),
+            [
+                'is_draft' => false, 'raw_data' => json_encode(['']), ], [], []);
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
 
@@ -206,5 +239,136 @@ class AdminRepositoryTest extends WebTestCase
         $user = $userRepository->findOneBy(['email' => $email]);
 
         $this->assertEmpty($user);
+    }
+
+    /**
+     * Test if an administrator user can published an article.
+     *
+     * @group admin-article
+     *
+     * @return void
+     */
+    public function testIfAnAdminCanCreateAnArticle()
+    {
+        $this->createArticle();
+    }
+
+    /**
+     * Test if an administrator user can delete an article.
+     *
+     * @group admin-article
+     *
+     * @return void
+     */
+    public function testIfAnAdminCanDeleteAnArticle()
+    {
+        $adminId = $this->admin->getId();
+        $articleId = $this->createArticle();
+
+        $this->client->request('POST', '/api/admin/'.$adminId.'/articles/'.$articleId.'/delete');
+
+        $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
+    }
+
+    /**
+     * Test if an administrator user can update an article.
+     *
+     * @group admin-article
+     *
+     * @return void
+     */
+    public function testIfAnAdminCanUpdateAnArticle()
+    {
+        $adminId = $this->admin->getId();
+        // create a draft article
+        $articleId = $this->createArticle(true);
+
+        $this->client->request('POST', '/api/admin/'.$adminId.'/articles/'.$articleId.'/update', [
+            'is_draft' => false,
+            'raw_data' => $this->htmlSample,
+        ]);
+
+        $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
+
+        UserHelper::assertJsonResponse($this->client, 'id', $articleId);
+    }
+
+    /**
+     * Test if an administrator can fetch a specified article.
+     *
+     * @group admin-article
+     *
+     * @return void
+     */
+    public function testIfAnAdminCanFetchAnArticle()
+    {
+        $adminId = $this->admin->getId();
+        // create a draft article
+        $articleId = $this->createArticle(true);
+
+        $this->client->request('GET', '/api/admin/'.$adminId.'/articles/'.$articleId, []);
+
+        $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
+
+        UserHelper::assertJsonResponse($this->client, [
+        'user_id' => $adminId,
+        'id' => $articleId,
+        'raw_data' => $this->htmlSample,
+        'is_draft' => true,
+        ]);
+    }
+
+    /**
+     *  Test if an administrator can fetch all his published articles.
+     *
+     * @group admin-article
+     *
+     * @return void
+     */
+    public function testIfAnAdminCanFetchAllHisPublishedArticles()
+    {
+        $adminId = $this->admin->getId();
+        // create a published article
+        $articleId = $this->createArticle();
+
+        $this->client->request('POST', '/api/admin/'.$adminId.'/articles', ['is_draft' => false]);
+
+        $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
+
+        $json = UserHelper::assertJsonResponse($this->client);
+
+        $this->assertCount(1, $json);
+
+        $article = $json[0];
+
+        $this->assertArrayHasKey('is_draft', $article);
+        $this->assertFalse($article['is_draft']);
+    }
+
+    /**
+     *  Test if an administrator can fetch all his draft articles.
+     *
+     * @group admin-article
+     *
+     * @return void
+     */
+    public function testIfAnAdminCanFetchAllHisDraftArticles()
+    {
+        $adminId = $this->admin->getId();
+        // create a draft article
+        $articleId = $this->createArticle(true);
+
+        $this->client->request('POST', '/api/admin/'.$adminId.'/articles', ['is_draft' => true]);
+
+        $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
+
+        $json = UserHelper::assertJsonResponse($this->client);
+
+        $this->assertCount(1, $json);
+
+        $article = $json[0];
+
+        $this->assertArrayHasKey('is_draft', $article);
+        $this->assertTrue($article['is_draft']);
     }
 }

@@ -13,6 +13,8 @@ import Profil from '../components/Profil';
 import Admin from '../components/Admin';
 import ResetPassword from '../components/ResetPassword';
 import ResetPasswordLink from '../components/ResetPasswordLink';
+import ArticleEditor from '../components/editor/ArticleEditor';
+import ArticleList from '../components/editor/ArticleList';
 
 import NotFound from '../components/main/NotFound';
 import { withStyles } from '@material-ui/core/styles';
@@ -35,14 +37,22 @@ class App extends Component {
         <div className={classes.toolbar} />
         <TopAppBar></TopAppBar>
         <Switch>
-          <AdminRoute restricted={true} component={Admin} path="/admin" exact />
           
           <PublicRoute restricted={true} component={SignIn} path="/" exact />
           <PublicRoute restricted={true} component={SignUp} path="/register" exact />
           <PublicRoute restricted={true} component={ResetPassword} path="/resetPassword" exact />
           <PublicRoute restricted={true} component={ResetPasswordLink} path="/resetPassword/link/:id" exact />
           
+          <PrivateRoute restricted={true} component={ResetPasswordLink} path="/resetPassword/link/:id" exact />
           <PrivateRoute component={() => <Profil id={Auth.getUser().id}></Profil>} path="/profil" exact />
+
+          <AdminRoute restricted={true} component={Admin} path="/admin" exact />
+          
+          <AdminRoute restricted={true} component={ArticleEditor} path="/articles/new" exact />
+          <AdminRoute restricted={true} component={ArticleList} path="/articles" exact />
+
+          <AdminRoute restricted={true} component={ArticleEditor} path="/article/:articleId/:isDraft" exact />
+          
           <Route component={NotFound} />
         </Switch>
       </div>

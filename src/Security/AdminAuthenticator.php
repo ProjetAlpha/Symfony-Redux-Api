@@ -4,6 +4,7 @@ namespace App\Security;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,12 +26,15 @@ class AdminAuthenticator extends AbstractGuardAuthenticator
 
     private $encoder;
 
-    public function __construct(EntityManagerInterface $em, SessionInterface $session, RouterInterface $router, UserPasswordEncoderInterface $encoder)
+    private $logger;
+
+    public function __construct(EntityManagerInterface $em, SessionInterface $session, RouterInterface $router, UserPasswordEncoderInterface $encoder, LoggerInterface $logger)
     {
         $this->em = $em;
         $this->session = $session;
         $this->router = $router;
         $this->encoder = $encoder;
+        $this->logger = $logger;
     }
 
     /**
@@ -40,6 +44,8 @@ class AdminAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
+        $this->logger->info(' *** Session check *** ', ['session' => (array) $this->session->get('userInfo')]);
+
         return $this->session->get('userInfo');
     }
 
@@ -86,7 +92,7 @@ class AdminAuthenticator extends AbstractGuardAuthenticator
     {
         // Check credentials - e.g. make sure the password is valid.
         // In case of an API token, no credential check is needed.
-
+        // $this->passwordEncoder->isPasswordValid($user, $credentials['password']);
         return true;
     }
 

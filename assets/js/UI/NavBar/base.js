@@ -21,6 +21,7 @@ import PeopleIcon from '@material-ui/icons/People';
 import CreateIcon from '@material-ui/icons/Create';
 import HomeIcon from '@material-ui/icons/Home';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
+import AddCircleIcon from '@material-ui/icons/AddCircle';
 
 export {
     AppBar,
@@ -45,5 +46,6 @@ export {
     PeopleIcon,
     CreateIcon,
     HomeIcon,
-    AccountCircleIcon
+    AccountCircleIcon,
+    AddCircleIcon
 }
