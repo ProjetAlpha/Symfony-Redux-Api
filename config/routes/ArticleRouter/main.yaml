@@ -1,0 +1,34 @@
+article_fetchAll:
+  path: /api/articles/all
+  controller: App\Controller\ArticleController::all
+  methods: GET
+
+article_fetch:
+  path: /api/articles/{id}
+  controller: App\Controller\ArticleController::fetch
+  methods: GET
+
+admin_article_fetch:
+  path: /api/admin/{admin_id}/articles/{article_id}
+  controller: App\Controller\ArticleController::adminFetch
+  methods: GET
+
+article_create:
+  path: /api/admin/{admin_id}/articles/create
+  controller: App\Controller\ArticleController::create
+  methods: POST
+
+article_update:
+  path: /api/admin/{admin_id}/articles/{article_id}/update
+  controller: App\Controller\ArticleController::update
+  methods: POST
+
+article_delete:
+  path: /api/admin/{admin_id}/articles/{article_id}/delete
+  controller: App\Controller\ArticleController::delete
+  methods: POST
+
+admin_article:
+  path: /api/admin/{admin_id}/articles
+  controller: App\Controller\ArticleController::me
+  methods: POST

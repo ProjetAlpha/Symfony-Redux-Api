@@ -37,7 +37,14 @@ final class ApiExceptionListener
             return;
         }
 
+        // standard server error
         $response = new JsonResponse(['error' => $exception->getMessage()]);
+
+        // if an unauthorized response is triggered send a refresh token
+        if ($exception->getStatusCode() == Response::HTTP_UNAUTHORIZED && $exception->getHeaders()) {
+            $response = new JsonResponse(['refresh_token' => $exception->getHeaders()['refresh_token']]) ?? $response;
+        }
+
         $response->setStatusCode($exception->getStatusCode());
         $event->setResponse($response);
     }

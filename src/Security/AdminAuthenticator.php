@@ -4,11 +4,14 @@ namespace App\Security;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -16,6 +19,7 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
+use App\Security\TokenProvider;
 
 class AdminAuthenticator extends AbstractGuardAuthenticator
 {
@@ -25,12 +29,18 @@ class AdminAuthenticator extends AbstractGuardAuthenticator
 
     private $encoder;
 
-    public function __construct(EntityManagerInterface $em, SessionInterface $session, RouterInterface $router, UserPasswordEncoderInterface $encoder)
+    private $logger;
+
+    private $tokenProvider;
+
+    public function __construct(EntityManagerInterface $em, SessionInterface $session, RouterInterface $router, UserPasswordEncoderInterface $encoder, LoggerInterface $logger)
     {
         $this->em = $em;
         $this->session = $session;
         $this->router = $router;
         $this->encoder = $encoder;
+        $this->logger = $logger;
+        $this->tokenProvider = new TokenProvider();
     }
 
     /**
@@ -40,7 +50,11 @@ class AdminAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return $this->session->get('userInfo');
+        if ($_ENV['APP_ENV'] == 'dev') {
+            $this->logger->info(' *** Admin Token Check *** ', ['token' => $request->headers->get('X-API-TOKEN') ]);
+        }
+
+        return $request->headers->has('X-API-TOKEN');
     }
 
     /**
@@ -49,9 +63,11 @@ class AdminAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
-        return [
+        // $request->headers->get('X-API-TOKEN');
+        /*return [
             'userInfo' => $this->session->get('userInfo'),
-        ];
+        ];*/
+        return $request->headers->get('X-API-TOKEN');
     }
 
     public function getUser($credentials, UserProviderInterface $userProvider)
@@ -59,24 +75,34 @@ class AdminAuthenticator extends AbstractGuardAuthenticator
         if (null === $credentials) {
             // The token header was empty, authentication fails with HTTP Status
             // Code 401 "Unauthorized"
-            throw new AccessDeniedHttpException('Wrong admin credentials..');
+            throw new UnauthorizedHttpException('WWW-Authenticate: Bearer realm="Token Expired"', 'Wrong admin credentials.');
         }
 
         $admin = $this->em->getRepository(User::class)
-        ->findOneBy(['email' => $credentials['userInfo']->getEmail()]);
+        ->findOneBy(['apiToken' => $credentials]);
 
-        if (!$admin) {
-            throw new AccessDeniedHttpException('Wrong admin credentials.');
+        if (!$admin || !$admin->getIsAdmin()) {
+            throw new BadRequestHttpException('Wrong admin credentials.');
         }
 
-        if (!$admin->getIsAdmin()) {
-            throw new AccessDeniedHttpException('Wrong access level.');
-        }
+        // expired token : send a refresh token.
+        if (time() > $admin->getExpireAtToken()) {
+            $refreshAdmin = $this->em->getRepository(User::class)
+            ->findOneBy(['refresh_token' => $credentials]) ?? null;
 
-        $isAuth = hash_equals($admin->getPassword(), $credentials['userInfo']->getToken());
+            if (!$refreshAdmin) {
+                $this->tokenProvider->setToken(32);
+                $token = $this->tokenProvider->getToken();
 
-        if (!$isAuth) {
-            throw new AccessDeniedHttpException('Wrong admin credentials.');
+                $admin->setRefreshToken($token);
+    
+                $this->em->persist($admin);
+                $this->em->flush();
+
+                throw new UnauthorizedHttpException('WWW-Authenticate: Bearer realm="Token Expired"', 'Token expired, here is your refresh token.', null, 401, [
+                    'refresh_token' => $token
+                ]);
+            }
         }
 
         return $admin;
@@ -86,7 +112,7 @@ class AdminAuthenticator extends AbstractGuardAuthenticator
     {
         // Check credentials - e.g. make sure the password is valid.
         // In case of an API token, no credential check is needed.
-
+        // $this->passwordEncoder->isPasswordValid($user, $credentials['password']);
         return true;
     }
 

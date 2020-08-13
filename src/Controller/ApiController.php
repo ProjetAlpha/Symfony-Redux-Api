@@ -55,7 +55,7 @@ class ApiController extends AbstractController
      */
     public function me(Request $request): JsonResponse
     {
-        $apiToken = $request->headers->get('X-AUTH-TOKEN');
+        $apiToken = $request->headers->get('X-API-TOKEN');
 
         if (null == $apiToken) {
             throw new BadRequestHttpException('Unexpected api token.');
@@ -120,17 +120,16 @@ class ApiController extends AbstractController
     {
         $imageData = $request->request->get('base64_image');
         $email = $request->request->get('email');
-        $apiToken = $request->headers->get('X-AUTH-TOKEN');
         $name = $request->request->get('name');
         $extension = $request->request->get('extension');
 
-        if (!$imageData || !$apiToken && !$email) {
+        if (!$imageData || !$email) {
             throw new BadRequestHttpException('Unexpected request input.');
         }
 
         $user = $this->entityManager->getRepository(User::class);
 
-        $user = $apiToken ? $user->findOneBy(['apiToken' => $apiToken]) : $user->findOneBy(['email' => $email]);
+        $user = $user->findOneBy(['email' => $email]);
 
         if (!$user) {
             throw new NotFoundHttpException('Unexpected user.');
@@ -178,16 +177,15 @@ class ApiController extends AbstractController
      */
     public function searchImages(Request $request, ValidatorInterface $validator): JsonResponse
     {
-        $apiToken = $request->headers->get('X-AUTH-TOKEN');
         $email = $request->request->get('email');
 
-        if (!$apiToken && !$email) {
+        if (!$email) {
             throw new BadRequestHttpException('Unexpected request input.');
         }
 
         $user = $this->entityManager->getRepository(User::class);
 
-        $user = $apiToken ? $user->findOneBy(['apiToken' => $apiToken]) : $user->findOneBy(['email' => $email]);
+        $user = $user->findOneBy(['email' => $email]);
 
         if (!$user) {
             throw new NotFoundHttpException('Unexpected user.');

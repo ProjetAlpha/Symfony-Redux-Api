@@ -71,7 +71,8 @@ class RegistrationController extends AbstractController
         $user->setFirstname($params['firstname']);
         $user->setLastname($params['lastname']);
 
-        $user->setApiToken($params['api_token'] ?? bin2hex(random_bytes(32)));
+        $user->setApiToken(bin2hex(random_bytes(32)));
+        $user->setExpireAtToken(time() + 60 * 60);
         $user->setRoles(['ROLE_USER', 'ROLE_API_USER']);
 
         $link = bin2hex(random_bytes(32));

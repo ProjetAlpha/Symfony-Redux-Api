@@ -13,6 +13,12 @@ export default function Success(state = initialState, action) {
             success: true
           };
     
+        case 'REQUEST_SUCCESS':
+          return {
+            ...state,
+            success: true
+          };
+
         case 'RESET_SUCCESS':
           return initialState;
     

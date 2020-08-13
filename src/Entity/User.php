@@ -80,9 +80,25 @@ class User implements UserInterface
      */
     private $reset_link_timeout;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Article::class, mappedBy="user_id")
+     */
+    private $articles;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $refresh_token;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $expire_at_token;
+
     public function __construct()
     {
         $this->images = new ArrayCollection();
+        $this->articles = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -286,6 +302,61 @@ class User implements UserInterface
     public function setResetLinkTimeout(?int $reset_link_timeout): self
     {
         $this->reset_link_timeout = $reset_link_timeout;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Article[]
+     */
+    public function getArticles(): Collection
+    {
+        return $this->articles;
+    }
+
+    public function addArticle(Article $article): self
+    {
+        if (!$this->articles->contains($article)) {
+            $this->articles[] = $article;
+            $article->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeArticle(Article $article): self
+    {
+        if ($this->articles->contains($article)) {
+            $this->articles->removeElement($article);
+            // set the owning side to null (unless already changed)
+            if ($article->getUserId() === $this) {
+                $article->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getRefreshToken(): ?string
+    {
+        return $this->refresh_token;
+    }
+
+    public function setRefreshToken(?string $refresh_token): self
+    {
+        $this->refresh_token = $refresh_token;
+
+        return $this;
+    }
+
+    public function getExpireAtToken(): ?int
+    {
+        return $this->expire_at_token;
+    }
+
+    public function setExpireAtToken(int $expire_at_token): self
+    {
+        $this->expire_at_token = $expire_at_token;
 
         return $this;
     }

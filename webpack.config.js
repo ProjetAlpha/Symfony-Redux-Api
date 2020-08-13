@@ -59,6 +59,7 @@ Encore
     })
     
     .configureDefinePlugin(options => {
+
         const env = dotenv.config();
 
         if (env.error) {
@@ -75,9 +76,10 @@ Encore
         compress = true,
         options.hot = true,
         options.headers = {
-            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Origin": '*',
             "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-            "Access-Control-Allow-Headers": "X-Requested-With, content-type, Authorization"
+            "Access-Control-Allow-Headers": "X-Requested-With, content-type, Authorization",
+            "Access-Control-Allow-Credentials": "true"
         }
     })
     // enables Sass/SCSS support

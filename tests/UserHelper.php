@@ -2,10 +2,145 @@
 
 namespace App\Tests;
 
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class UserHelper extends WebTestCase
 {
+    /**
+     * Html sample.
+     *
+     * @var string
+     */
+    protected $htmlSample;
+
+    /**
+     * Entity manager.
+     *
+     * @var
+     */
+    protected $em;
+
+    /**
+     * Admin entity.
+     *
+     * @var
+     */
+    protected $admin;
+    
+    /**
+     * User enity.
+     *
+     * @var
+     */
+    protected $user;
+
+    /**
+     * Admin password.
+     *
+     * @var
+     */
+    protected $originalAdminPassword;
+
+    /**
+     * User password.
+     *
+     * @var
+     */
+    protected $originalUserPassword;
+
+    protected static $isAdmin;
+
+    protected function setUp(): void
+    {
+        $kernel = self::bootKernel();
+
+        $this->em = $kernel->getContainer()
+            ->get('doctrine')
+            ->getManager();
+        
+        $encoder = $kernel->getContainer()->get('security.password_encoder');
+        $this->make($encoder);
+
+        self::ensureKernelShutdown();
+        $this->em->close();
+        $this->em = null;
+        $encoder = null;
+
+        $apiToken = static::$isAdmin ? $this->admin->getApiToken() : $this->user->getApiToken();
+        $this->client = static::createClient([], ['HTTP_X-API-TOKEN' => $apiToken]);
+        $this->htmlSample = '<html><body><p>Hello World</p></body></html>';
+    }
+
+    /**
+     * Create an admin test user.
+     */
+    private function make($encoder): void
+    {
+        // create an admin user
+        extract(UserHelper::createRandomUser());
+        $this->originalAdminPassword = $password;
+
+        $user = new User();
+
+        $user->setPassword($encoder->encodePassword($user, $password));
+        $user->setEmail($email);
+        $user->setFirstname($firstname);
+        $user->setLastname($lastname);
+
+        $user->setApiToken($apiToken);
+        $user->setExpireAtToken(time() + 60 * 60); // 1 hour token expiration
+        $user->setConfirmationLink(null);
+        $user->setRoles(['ROLE_USER', 'ROLE_API_USER', 'ROLE_ADMIN']);
+        $user->setIsAdmin(true);
+
+        $this->admin = $user;
+        $this->em->persist($user);
+        $this->em->flush();
+
+        // create a standard user
+        extract(UserHelper::createRandomUser());
+        $this->originalUserPassword = $password;
+
+        $user = new User();
+        $user->setPassword($encoder->encodePassword($user, $password));
+        $user->setEmail($email);
+        $user->setFirstname($firstname);
+        $user->setLastname($lastname);
+
+        $user->setApiToken($apiToken);
+        $user->setExpireAtToken(time() + 60 * 60);  // 1 hour token expiration
+        $user->setConfirmationLink(null);
+        $user->setRoles(['ROLE_USER', 'ROLE_API_USER', 'ROLE_ADMIN']);
+        $user->setIsAdmin(false);
+
+        $this->user = $user;
+        $this->em->persist($user);
+        $this->em->flush();
+    }
+
+    /**
+     * Create a random admin article.
+     *
+     * @return int $articleId
+     */
+    protected function createArticle($isDraft = false)
+    {
+        static::loginUser($this->client, $this->admin->getEmail(), $this->originalAdminPassword);
+        $adminId = $this->admin->getId();
+
+        $this->client->request('POST', '/api/admin/'.$adminId.'/articles/create', [
+            'is_draft' => $isDraft,
+            'raw_data' => $this->htmlSample,
+        ], [], []);
+
+        $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
+        
+        $jsonResponse = static::assertJsonResponse($this->client, 'id');
+
+        return $jsonResponse['id'];
+    }
+
     /**
      * Create a true random user.
      */
@@ -53,6 +188,9 @@ class UserHelper extends WebTestCase
             ]
         );
 
+        if ($client->getResponse()->getStatusCode() == 500) {
+            dd($client->getResponse()->getContent());
+        }
         static::assertEquals($expectedResponse ? $expectedResponse : 201, $client->getResponse()->getStatusCode());
     }
 
@@ -93,5 +231,40 @@ class UserHelper extends WebTestCase
 
         $json = json_decode($response, true);
         static::assertArrayHasKey($key ? $key : 'error', $json);
+    }
+
+    /**
+     * Test if an api response contains a json message.
+     *
+     * @param \Symfony\Bundle\FrameworkBundle\Test\WebTestCase::createClient $client
+     *
+     * @return void
+     */
+    public static function assertJsonResponse($client, $key = null, $value = null)
+    {
+        $response = $client->getResponse()->getContent();
+        static::assertJson($response);
+
+        $json = json_decode($response, true);
+
+        if (isset($key) && is_array($key) && is_array($json)) {
+            $fail = false;
+            foreach ($json as $k => $v) {
+                if (!in_array($v, $key) || !array_key_exists($k, $key)) {
+                    $fail = true;
+                }
+            }
+            static::assertFalse($fail);
+        } else {
+            if ($key) {
+                static::assertArrayHasKey($key, $json);
+            }
+
+            if ($value) {
+                static::assertEquals($json[$key], $value);
+            }
+        }
+
+        return $json;
     }
 }

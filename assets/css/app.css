@@ -5,6 +5,10 @@
     --bodyHeight: calc(100vh - 56px);
 }
 
+.editor :global(.public-DraftEditor-content) {
+    min-height: 300px;
+}
+
 @media (min-width: 600px){
     :root {
         --toolBar: 64px;
