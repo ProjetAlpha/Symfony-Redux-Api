@@ -11,9 +11,7 @@ framework:
     session:
         enabled: true
         cookie_secure: auto
-        cookie_samesite: null
-        cookie_lifetime: 3600
-        gc_maxlifetime: 3600
+        cookie_samesite: lax
 
     #esi: true
     #fragments: true

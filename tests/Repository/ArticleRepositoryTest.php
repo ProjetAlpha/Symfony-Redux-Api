@@ -7,6 +7,16 @@ use App\Tests\UserHelper;
 class ArticleRepositoryTest extends UserHelper
 {
     /**
+     * Specified an api token strategy
+     *
+     * @return void
+     */
+    public static function setUpBeforeClass(): void
+    {
+        static::$isAdmin = true;
+    }
+    
+    /**
      * Test if a standard user can fetch a specified article.
      *
      *  @group article-repo
@@ -23,12 +33,14 @@ class ArticleRepositoryTest extends UserHelper
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
 
-        static::assertJsonResponse($this->client,
-        [
+        static::assertJsonResponse(
+            $this->client,
+            [
             'raw_data' => $this->htmlSample,
             'id' => $articleId,
             'is_draft' => false,
-        ]);
+            ]
+        );
     }
 
     /**

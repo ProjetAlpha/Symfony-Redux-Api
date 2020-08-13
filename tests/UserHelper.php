@@ -27,6 +27,13 @@ class UserHelper extends WebTestCase
      * @var
      */
     protected $admin;
+    
+    /**
+     * User enity.
+     *
+     * @var
+     */
+    protected $user;
 
     /**
      * Admin password.
@@ -42,6 +49,8 @@ class UserHelper extends WebTestCase
      */
     protected $originalUserPassword;
 
+    protected static $isAdmin;
+
     protected function setUp(): void
     {
         $kernel = self::bootKernel();
@@ -49,7 +58,7 @@ class UserHelper extends WebTestCase
         $this->em = $kernel->getContainer()
             ->get('doctrine')
             ->getManager();
-
+        
         $encoder = $kernel->getContainer()->get('security.password_encoder');
         $this->make($encoder);
 
@@ -58,7 +67,8 @@ class UserHelper extends WebTestCase
         $this->em = null;
         $encoder = null;
 
-        $this->client = static::createClient();
+        $apiToken = static::$isAdmin ? $this->admin->getApiToken() : $this->user->getApiToken();
+        $this->client = static::createClient([], ['HTTP_X-API-TOKEN' => $apiToken]);
         $this->htmlSample = '<html><body><p>Hello World</p></body></html>';
     }
 
@@ -79,6 +89,7 @@ class UserHelper extends WebTestCase
         $user->setLastname($lastname);
 
         $user->setApiToken($apiToken);
+        $user->setExpireAtToken(time() + 60 * 60); // 1 hour token expiration
         $user->setConfirmationLink(null);
         $user->setRoles(['ROLE_USER', 'ROLE_API_USER', 'ROLE_ADMIN']);
         $user->setIsAdmin(true);
@@ -98,6 +109,7 @@ class UserHelper extends WebTestCase
         $user->setLastname($lastname);
 
         $user->setApiToken($apiToken);
+        $user->setExpireAtToken(time() + 60 * 60);  // 1 hour token expiration
         $user->setConfirmationLink(null);
         $user->setRoles(['ROLE_USER', 'ROLE_API_USER', 'ROLE_ADMIN']);
         $user->setIsAdmin(false);
@@ -115,7 +127,6 @@ class UserHelper extends WebTestCase
     protected function createArticle($isDraft = false)
     {
         static::loginUser($this->client, $this->admin->getEmail(), $this->originalAdminPassword);
-
         $adminId = $this->admin->getId();
 
         $this->client->request('POST', '/api/admin/'.$adminId.'/articles/create', [
@@ -124,7 +135,7 @@ class UserHelper extends WebTestCase
         ], [], []);
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
-
+        
         $jsonResponse = static::assertJsonResponse($this->client, 'id');
 
         return $jsonResponse['id'];
@@ -177,6 +188,9 @@ class UserHelper extends WebTestCase
             ]
         );
 
+        if ($client->getResponse()->getStatusCode() == 500) {
+            dd($client->getResponse()->getContent());
+        }
         static::assertEquals($expectedResponse ? $expectedResponse : 201, $client->getResponse()->getStatusCode());
     }
 

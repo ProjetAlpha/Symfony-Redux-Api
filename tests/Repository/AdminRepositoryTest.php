@@ -7,118 +7,28 @@ use App\Repository\UserRepository;
 use App\Tests\UserHelper;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class AdminRepositoryTest extends WebTestCase
+class AdminRepositoryTest extends UserHelper
 {
     /**
-     * Html sample.
+     * Specified an api token strategy
      *
-     * @var string
+     * @return void
      */
-    protected $htmlSample;
-
-    /**
-     * Client request.
-     *
-     * @var
-     */
-    protected $client;
-
-    /**
-     * Entity manager.
-     *
-     * @var
-     */
-    protected $em;
-
-    /**
-     * Admin entity.
-     *
-     * @var
-     */
-    protected $admin;
-
-    /**
-     * Admin password.
-     *
-     * @var
-     */
-    protected $originalPassword;
-
-    protected function setUp(): void
+    public static function setUpBeforeClass(): void
     {
-        $kernel = self::bootKernel();
-
-        $this->em = $kernel->getContainer()
-            ->get('doctrine')
-            ->getManager();
-
-        $encoder = $kernel->getContainer()->get('security.password_encoder');
-        $this->makeAdmin($encoder);
-
-        self::ensureKernelShutdown();
-        $this->em->close();
-        $this->em = null;
-        $encoder = null;
-
-        $this->client = static::createClient();
-        $this->htmlSample = '<html><body><p>Hello World</p></body></html>';
-    }
-
-    /**
-     * Create an admin test user.
-     */
-    private function makeAdmin($encoder): void
-    {
-        extract(UserHelper::createRandomUser());
-        $this->originalPassword = $password;
-
-        $user = new User();
-
-        $user->setPassword($encoder->encodePassword($user, $password));
-        $user->setEmail($email);
-        $user->setFirstname($firstname);
-        $user->setLastname($lastname);
-
-        $user->setApiToken($apiToken);
-        $user->setRoles(['ROLE_USER', 'ROLE_API_USER', 'ROLE_ADMIN']);
-        $user->setIsAdmin(true);
-
-        $this->admin = $user;
-        $this->em->persist($user);
-        $this->em->flush();
-    }
-
-    /**
-     * Create a random admin article.
-     *
-     * @return int $articleId
-     */
-    private function createArticle($isDraft = false)
-    {
-        UserHelper::loginUser($this->client, $this->admin->getEmail(), $this->originalPassword);
-
-        $adminId = $this->admin->getId();
-
-        $this->client->request('POST', '/api/admin/'.$adminId.'/articles/create', [
-            'is_draft' => $isDraft,
-            'raw_data' => $this->htmlSample,
-        ], [], []);
-
-        $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
-
-        $jsonResponse = UserHelper::assertJsonResponse($this->client, 'id');
-
-        return $jsonResponse['id'];
+        static::$isAdmin = true;
     }
 
     /**
      * Test if a newly created admin user can access admin routes.
      *
+     * @group admin-repo
+     *
      * @return void
      */
     public function testIfAnAdminUserIsAuthorized()
     {
-        UserHelper::loginUser($this->client, $this->admin->getEmail(), $this->originalPassword);
+        static::loginUser($this->client, $this->admin->getEmail(), $this->originalAdminPassword);
 
         $this->client->request('POST', '/api/admin/me', ['email' => $this->admin->getEmail()], [], []);
 
@@ -139,6 +49,8 @@ class AdminRepositoryTest extends WebTestCase
     /**
      * Test if an unauthorized user has access denied.
      *
+     * @group admin-repo
+     *
      * @return void
      */
     public function testIfAnUnauthorizedUserIsDenied()
@@ -147,41 +59,32 @@ class AdminRepositoryTest extends WebTestCase
 
         $this->client->request('POST', '/api/admin/me', ['email' => $email], [], []);
 
-        $this->assertEquals(401, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals(404, $this->client->getResponse()->getStatusCode());
     }
 
     /**
      * Test if a standard user can't access admin ressources.
      *
+     * @group admin-repo
+     *
      * @return void
      */
     public function testIfAStandardUserIsUnauthorized()
     {
-        extract(UserHelper::createRandomUser());
+        $this->client->request('POST', '/api/admin/me', ['email' => $this->user->getEmail()], [], []);
 
-        UserHelper::registerUser($this->client, $email, $apiToken, $password, $firstname, $lastname);
-
-        UserHelper::loginUser($this->client, $email, $password);
-
-        $this->client->request('POST', '/api/admin/me', ['email' => $email], [], []);
-
-        $this->assertEquals(403, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals(404, $this->client->getResponse()->getStatusCode());
     }
 
     /**
      * Test if an administrator can find all standard users (none administrator users).
      *
+     * @group admin-repo
+     *
      * @return void
      */
     public function testIfAnAdministratorCanFetchUsers()
     {
-        extract(UserHelper::createRandomUser());
-
-        // register a random user and log an administrator
-        UserHelper::registerUser($this->client, $email, $apiToken, $password, $firstname, $lastname);
-
-        UserHelper::loginUser($this->client, $this->admin->getEmail(), $this->originalPassword);
-
         $this->client->request('GET', '/api/admin/users/fetch', [], [], []);
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
@@ -194,13 +97,11 @@ class AdminRepositoryTest extends WebTestCase
 
         $hasNewUser = false;
         foreach ($data as $values) {
-            $this->assertArrayHasKey('id', $values);
-            $this->assertArrayHasKey('email', $values);
-            $this->assertArrayHasKey('is_admin', $values);
+            if ($values['email'] == $this->user->getEmail()) {
+                $this->assertArrayHasKey('id', $values);
+                $this->assertArrayHasKey('email', $values);
+                $this->assertArrayHasKey('is_admin', $values);
 
-            $this->assertEquals(null, $values['is_admin']);
-
-            if ($values['email'] == $email) {
                 $hasNewUser = true;
             }
         }
@@ -211,32 +112,32 @@ class AdminRepositoryTest extends WebTestCase
     /**
      * Test if an administrator can delete a specified user.
      *
+     * @group admin-repo
+     *
      * @return void
      */
     public function testIfAnAdministratorCanDeleteAUser()
     {
-        extract(UserHelper::createRandomUser());
-
-        // register a random user and log an administrator
-        UserHelper::registerUser($this->client, $email, $apiToken, $password, $firstname, $lastname);
-
-        UserHelper::loginUser($this->client, $this->admin->getEmail(), $this->originalPassword);
-
         $userRepository = static::$container->get(UserRepository::class);
 
-        $user = $userRepository->findOneBy(['email' => $email]);
+        $user = $userRepository->findOneBy(['email' => $this->admin->getEmail()]);
 
         $this->assertNotEmpty($user);
 
-        $this->client->request('DELETE', '/api/admin/users/delete/'.$user->getId(),
+        $this->client->request(
+            'DELETE',
+            '/api/admin/users/delete/'.$user->getId(),
             [
-                'is_draft' => false, 'raw_data' => json_encode(['']), ], [], []);
+                'is_draft' => false, 'raw_data' => json_encode(['']), ],
+            [],
+            []
+        );
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
 
         $userRepository = static::$container->get(UserRepository::class);
 
-        $user = $userRepository->findOneBy(['email' => $email]);
+        $user = $userRepository->findOneBy(['email' => $this->admin->getEmail()]);
 
         $this->assertEmpty($user);
     }
@@ -286,11 +187,11 @@ class AdminRepositoryTest extends WebTestCase
         $this->client->request('POST', '/api/admin/'.$adminId.'/articles/'.$articleId.'/update', [
             'is_draft' => false,
             'raw_data' => $this->htmlSample,
-        ]);
+        ], []);
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
 
-        UserHelper::assertJsonResponse($this->client, 'id', $articleId);
+        static::assertJsonResponse($this->client, 'id', $articleId);
     }
 
     /**
@@ -306,11 +207,11 @@ class AdminRepositoryTest extends WebTestCase
         // create a draft article
         $articleId = $this->createArticle(true);
 
-        $this->client->request('GET', '/api/admin/'.$adminId.'/articles/'.$articleId, []);
+        $this->client->request('GET', '/api/admin/'.$adminId.'/articles/'.$articleId, [], []);
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
 
-        UserHelper::assertJsonResponse($this->client, [
+        static::assertJsonResponse($this->client, [
         'user_id' => $adminId,
         'id' => $articleId,
         'raw_data' => $this->htmlSample,
@@ -335,7 +236,7 @@ class AdminRepositoryTest extends WebTestCase
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
 
-        $json = UserHelper::assertJsonResponse($this->client);
+        $json = static::assertJsonResponse($this->client);
 
         $this->assertCount(1, $json);
 
@@ -362,7 +263,7 @@ class AdminRepositoryTest extends WebTestCase
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
 
-        $json = UserHelper::assertJsonResponse($this->client);
+        $json = static::assertJsonResponse($this->client);
 
         $this->assertCount(1, $json);
 

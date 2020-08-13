@@ -85,6 +85,16 @@ class User implements UserInterface
      */
     private $articles;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $refresh_token;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $expire_at_token;
+
     public function __construct()
     {
         $this->images = new ArrayCollection();
@@ -323,6 +333,30 @@ class User implements UserInterface
                 $article->setUserId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getRefreshToken(): ?string
+    {
+        return $this->refresh_token;
+    }
+
+    public function setRefreshToken(?string $refresh_token): self
+    {
+        $this->refresh_token = $refresh_token;
+
+        return $this;
+    }
+
+    public function getExpireAtToken(): ?int
+    {
+        return $this->expire_at_token;
+    }
+
+    public function setExpireAtToken(int $expire_at_token): self
+    {
+        $this->expire_at_token = $expire_at_token;
 
         return $this;
     }

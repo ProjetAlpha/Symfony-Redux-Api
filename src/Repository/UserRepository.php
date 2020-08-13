@@ -66,14 +66,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         if (!$isAdmin) {
             return $this->createQueryBuilder('u')
                 ->select('u.email, u.id, u.firstname, u.lastname, u.is_admin')
-                ->andWhere('u.is_admin IS NULL')
+                ->andWhere('u.is_admin IS NULL OR u.is_admin = false')
                 ->getQuery()
                 ->getResult();
         }
 
         return $this->createQueryBuilder('u')
             ->select('u.email, u.id, u.firstname, u.lastname, u.is_admin')
-            ->andWhere('u.is_admin IS NOT NULL')
+            ->andWhere('u.is_admin IS NULL OR u.is_admin = false')
             ->getQuery()
             ->getResult();
     }

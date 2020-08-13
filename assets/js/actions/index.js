@@ -35,9 +35,27 @@ client.interceptors.response.use(response => {
   // apiReq[route] = { resolved: true, hasError: false }
   return response;
 }, error => {
+  // 401 & token_expired: true
+  // refresh_token: XXX
+  // /api/token/refresh
+  // delete refresh token & new api token & send new access token
+  // si refresh_token || api_token => check DB
+  
   if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-    //logoutOnResponseError(error.response.status);
-    //window.location = '/';
+    if (error.response.status === 401) {
+      if (error.response.data && error.response.data.refreshToken) {
+        client.post(`/token/refresh/${error.response.data.refreshToken}`)
+              .then(res => {
+                // New access_token
+                // Auth.setUser({})
+              })
+      }
+    }
+
+    if (error.response.status === 403) {
+      logoutOnResponseError(error.response.status);
+      window.location = '/';
+    }
   } else {
     // apiReq[route].hasError = { resolved: false, hasError: true }
     return Promise.reject(error);

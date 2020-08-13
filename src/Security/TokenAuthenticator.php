@@ -3,12 +3,15 @@
 namespace App\Security;
 
 use App\Entity\User;
+use Psr\Log\LoggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -25,12 +28,18 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
 
     private $encoder;
 
-    public function __construct(EntityManagerInterface $em, SessionInterface $session, RouterInterface $router, UserPasswordEncoderInterface $encoder)
+    private $logger;
+
+    private $tokenProvider;
+
+    public function __construct(EntityManagerInterface $em, SessionInterface $session, RouterInterface $router, UserPasswordEncoderInterface $encoder, LoggerInterface $logger)
     {
         $this->em = $em;
         $this->session = $session;
         $this->router = $router;
         $this->encoder = $encoder;
+        $this->logger = $logger;
+        $this->tokenProvider = new TokenProvider();
     }
 
     /**
@@ -40,7 +49,11 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return $request->headers->has('X-AUTH-TOKEN') || $this->session->get('userInfo');
+        if ($_ENV['APP_ENV'] == 'dev') {
+            $this->logger->info(' *** User Token Check *** ', ['token' => $request->headers->get('X-API-TOKEN') ]);
+        }
+
+        return $request->headers->has('X-API-TOKEN');
     }
 
     /**
@@ -49,10 +62,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
-        return [
-            'apiToken' => $request->headers->get('X-AUTH-TOKEN'),
-            'userInfo' => $this->session->get('userInfo'),
-        ];
+        return $request->headers->get('X-API-TOKEN');
     }
 
     public function getUser($credentials, UserProviderInterface $userProvider)
@@ -60,29 +70,32 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
         if (null === $credentials) {
             // The token header was empty, authentication fails with HTTP Status
             // Code 401 "Unauthorized"
-            throw new AccessDeniedHttpException('Wrong user credentials.');
+            throw new UnauthorizedHttpException('WWW-Authenticate: Bearer realm="Token Expired"', 'Wrong admin credentials.');
         }
 
         $user = $this->em->getRepository(User::class)
-        ->findOneBy(['apiToken' => $credentials['apiToken']]);
+        ->findOneBy(['apiToken' => $credentials]);
 
-        if (!$user && $credentials['userInfo']) {
-            $user = $this->em->getRepository(User::class)
-            ->findOneBy(['email' => $credentials['userInfo']->getEmail()]);
+        if (!$user) {
+            throw new BadRequestHttpException('Wrong user credentials.');
+        }
 
-            if (!$user) {
-                throw new AccessDeniedHttpException('Wrong user credentials.');
-            }
+        if (time() > $user->getExpireAtToken()) {
+            $refreshAdmin = $this->em->getRepository(User::class)
+            ->findOneBy(['refresh_token' => $credentials]) ?? null;
 
-            if (time() > $credentials['userInfo']->getExpireAt()) {
-                $this->session->invalidate();
-                throw new AccessDeniedHttpException('Credentials expired.');
-            }
+            if (!$refreshAdmin) {
+                $this->tokenProvider->setToken(32);
+                $token = $this->tokenProvider->getToken();
 
-            $isAuth = hash_equals($user->getPassword(), $credentials['userInfo']->getToken());
+                $user->setRefreshToken($token);
+    
+                $this->em->persist($user);
+                $this->em->flush();
 
-            if (!$isAuth) {
-                throw new AccessDeniedHttpException('Wrong user credentials.');
+                throw new UnauthorizedHttpException('WWW-Authenticate: Bearer realm="Token Expired"', 'Token expired, here is your refresh token.', null, 401, [
+                    'refresh_token' => $token
+                ]);
             }
         }
 

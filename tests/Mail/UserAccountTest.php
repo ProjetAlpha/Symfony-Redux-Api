@@ -7,20 +7,8 @@ use App\Repository\UserRepository;
 use App\Tests\UserHelper;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class UserAccountTest extends WebTestCase
+class UserAccountTest extends UserHelper
 {
-    /**
-     * Client request.
-     *
-     * @var
-     */
-    protected $client;
-
-    protected function setUp(): void
-    {
-        $this->client = static::createClient();
-    }
-
     /**
      * Test if a logged in user should confirm is account.
      *
@@ -30,11 +18,9 @@ class UserAccountTest extends WebTestCase
      */
     public function testIfAnAuthenticatedUserShouldConfirmIsAccount()
     {
-        extract(UserHelper::createRandomUser());
-
-        UserHelper::registerUser($this->client, $email, $apiToken, $password, $firstname, $lastname);
-
-        UserHelper::loginUser($this->client, $email, $password);
+        extract(static::createRandomUser());
+        static::registerUser($this->client, $email, $apiToken, $password, $firstname, $lastname);
+        static::loginUser($this->client, $email, $password);
 
         $userRepository = static::$container->get(UserRepository::class);
 
@@ -42,7 +28,7 @@ class UserAccountTest extends WebTestCase
 
         $this->assertNotEmpty($user->getConfirmationLink());
 
-        $this->client->request('GET', '/api/register/confirmation/'.$user->getConfirmationLink(), [], [], []);
+        $this->client->request('GET', '/api/register/confirmation/'.$user->getConfirmationLink(), [], [], ['HTTP_X-API-TOKEN' => $apiToken]);
 
         $user = $userRepository->findOneBy(['email' => $email]);
 
@@ -60,15 +46,13 @@ class UserAccountTest extends WebTestCase
      */
     public function testIfAnUnauthenticatedUserCanSendAResetPassword()
     {
-        extract(UserHelper::createRandomUser());
+        static::loginUser($this->client, $this->user->getEmail(), $this->originalUserPassword);
 
-        UserHelper::registerUser($this->client, $email, $apiToken, $password, $firstname, $lastname);
-
-        $this->client->request('POST', '/api/public/reset/send', ['email' => $email], [], []);
+        $this->client->request('POST', '/api/public/reset/send', ['email' => $this->user->getEmail()], [], []);
 
         $userRepository = static::$container->get(UserRepository::class);
 
-        $user = $userRepository->findOneBy(['email' => $email]);
+        $user = $userRepository->findOneBy(['email' => $this->user->getEmail()]);
 
         $this->assertNotEmpty($user->getResetLink());
 
@@ -84,17 +68,15 @@ class UserAccountTest extends WebTestCase
      */
     public function testIfAnUnauthenticatedUserCanResetHisPassword()
     {
-        extract(UserHelper::createRandomUser());
+        static::loginUser($this->client, $this->user->getEmail(), $this->originalUserPassword);
 
-        UserHelper::registerUser($this->client, $email, $apiToken, $password, $firstname, $lastname);
-
-        $this->client->request('POST', '/api/public/reset/send', ['email' => $email], [], []);
+        $this->client->request('POST', '/api/public/reset/send', ['email' => $this->user->getEmail()], [], []);
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
 
         $userRepository = static::$container->get(UserRepository::class);
 
-        $user = $userRepository->findOneBy(['email' => $email]);
+        $user = $userRepository->findOneBy(['email' => $this->user->getEmail()]);
 
         $this->assertNotEmpty($user->getResetLink());
 
@@ -113,11 +95,9 @@ class UserAccountTest extends WebTestCase
      */
     public function testIfAnUnauthenticatedUserHasResetHisPassword()
     {
-        extract(UserHelper::createRandomUser());
+        static::loginUser($this->client, $this->user->getEmail(), $this->originalUserPassword);
 
-        UserHelper::registerUser($this->client, $email, $apiToken, $password, $firstname, $lastname);
-
-        $this->client->request('POST', '/api/public/reset/send', ['email' => $email], [], []);
+        $this->client->request('POST', '/api/public/reset/send', ['email' => $this->user->getEmail()], [], []);
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
 
@@ -129,7 +109,7 @@ class UserAccountTest extends WebTestCase
 
         $userRepository = static::$container->get(UserRepository::class);
 
-        $user = $userRepository->findOneBy(['email' => $email]);
+        $user = $userRepository->findOneBy(['email' => $this->user->getEmail()]);
         $oldPassword = $user->getPassword();
 
         $this->assertNotEmpty($user->getResetLink());
@@ -142,11 +122,11 @@ class UserAccountTest extends WebTestCase
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
 
-        $user = $userRepository->findOneBy(['email' => $email]);
+        $user = $userRepository->findOneBy(['email' => $this->user->getEmail()]);
 
         $this->assertNull($user->getResetLink());
         $this->assertNotEquals($user->getPassword(), $oldPassword);
 
-        UserHelper::loginUser($this->client, $email, 'new123pwd');
+        static::loginUser($this->client, $this->user->getEmail(), 'new123pwd');
     }
 }
