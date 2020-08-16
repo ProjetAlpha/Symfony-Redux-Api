@@ -34,8 +34,8 @@ class UploadFileTest extends UserHelper
             'HTTP_X-API-TOKEN' => $apiToken,
         ]);
 
-        // bad request response code
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        // unauthaurized request response code
+        $this->assertEquals(401, $client->getResponse()->getStatusCode());
     }
 
     /**
@@ -67,8 +67,8 @@ class UploadFileTest extends UserHelper
             'email' => $email,
         ], [], ['HTTP_X-API-TOKEN' => $apiToken]);
 
-        // bad request response code
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        // unauthaurized request response code
+        $this->assertEquals(401, $client->getResponse()->getStatusCode());
     }
 
     /**

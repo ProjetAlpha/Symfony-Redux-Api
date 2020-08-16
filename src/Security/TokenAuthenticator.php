@@ -50,7 +50,15 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     public function supports(Request $request)
     {
         if ($_ENV['APP_ENV'] == 'dev') {
+            $path = $request->getRequestUri();
+            $matchAdminRoute = preg_match('#/api/admin/.*#', $path, $matches);
+            
             $this->logger->info(' *** User Token Check *** ', ['token' => $request->headers->get('X-API-TOKEN') ]);
+            $this->logger->info(' *** Match api user route ***', ['match' => $matches]);
+        }
+
+        if (!$request->headers->has('X-API-TOKEN')) {
+            throw new UnauthorizedHttpException('WWW-Authenticate: Bearer realm="Api Token Missing"', 'Bad api token.');
         }
 
         return $request->headers->has('X-API-TOKEN');
@@ -70,14 +78,14 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
         if (null === $credentials) {
             // The token header was empty, authentication fails with HTTP Status
             // Code 401 "Unauthorized"
-            throw new UnauthorizedHttpException('WWW-Authenticate: Bearer realm="Token Expired"', 'Wrong admin credentials.');
+            throw new UnauthorizedHttpException('WWW-Authenticate: Bearer realm="Token Expired"', 'Wrong user credentials.');
         }
-
+        
         $user = $this->em->getRepository(User::class)
         ->findOneBy(['apiToken' => $credentials]);
 
         if (!$user) {
-            throw new BadRequestHttpException('Wrong user credentials.');
+            throw new UnauthorizedHttpException('WWW-Authenticate: Bearer realm="Token Expired"', 'Wrong user credentials.');
         }
 
         if (time() > $user->getExpireAtToken()) {

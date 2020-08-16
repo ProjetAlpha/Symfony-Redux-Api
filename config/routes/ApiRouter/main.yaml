@@ -3,6 +3,11 @@ me:
   controller: App\Controller\ApiController::me
   methods: POST
 
+refresh_token:
+  path: /api/public/token/refresh/{id}
+  controller: App\Controller\ApiController::refreshToken
+  methods: GET
+
 upload_image:
   path: /api/image/upload
   controller: App\Controller\ApiController::uploadImage

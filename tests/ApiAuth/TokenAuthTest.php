@@ -33,6 +33,8 @@ class TokenAuthTest extends UserHelper
         $this->client->request('POST', '/api/admin/'.$adminId.'/articles/create', [
             'is_draft' => true,
             'raw_data' => $this->htmlSample,
+            'title' => $this->articleTitle,
+            'description' => $this->articleDescription
         ], [], [
             'HTTP_X-API-TOKEN' => $this->admin->getApiToken()
         ]);
@@ -55,7 +57,14 @@ class TokenAuthTest extends UserHelper
 
         $this->assertEquals(401, $this->client->getResponse()->getStatusCode());
 
-        $this->assertJsonResponse($this->client, 'refresh_token');
+        $jsonResponse = static::assertJsonResponse($this->client, 'refresh_token');
+
+        $this->client->request('GET', '/api/public/token/refresh/'.$jsonResponse['refresh_token'], [], [], []);
+
+        $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
+        
+        $jsonResponse = static::assertJsonResponse($this->client, 'token');
+        $this->assertNotEquals($this->user->getApiToken(), $jsonResponse['token']);
     }
 
     /**

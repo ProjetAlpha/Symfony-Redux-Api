@@ -27,4 +27,11 @@ export default theme => ({
         color: red[500],
         cursor: 'pointer'
     },
+    searchItem: {
+        [theme.breakpoints.up('sm')]: {
+            justifyContent:'flex-start'
+        },
+        marginBottom:theme.spacing(1),
+        justifyContent:'center!important'
+    }
 })

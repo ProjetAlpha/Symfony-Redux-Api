@@ -1,101 +1,27 @@
 import React, { Component } from 'react';
 import * as UI from '../../UI/Editor/base';
 import { connect } from "react-redux";
-import { convertToRaw, EditorState, AtomicBlockUtils, RichUtils, getDefaultKeyBinding, convertFromRaw } from "draft-js";
-import Editor,  { composeDecorators } from 'draft-js-plugins-editor';
-import createUndoPlugin from 'draft-js-undo-plugin';
-import createVideoPlugin from 'draft-js-video-plugin';
-import createHashtagPlugin from 'draft-js-hashtag-plugin';
-import createLinkifyPlugin from 'draft-js-linkify-plugin';
-import createAlignmentPlugin from 'draft-js-alignment-plugin';
-import createResizeablePlugin from 'draft-js-resizeable-plugin';
-import createFocusPlugin from 'draft-js-focus-plugin';
-import createBlockDndPlugin from 'draft-js-drag-n-drop-plugin';
-import createImagePlugin from 'draft-js-image-plugin';
-import createEmojiPlugin from 'draft-js-emoji-plugin';
-import createDragNDropUploadPlugin from 'draft-js-dragndrop-upload-plugin';
-import createToolbarPlugin, { Separator } from 'draft-js-static-toolbar-plugin';
+import { Modifier, convertToRaw, EditorState, AtomicBlockUtils, RichUtils, getDefaultKeyBinding, convertFromRaw,KeyBindingUtil } from "draft-js";
+import sanitizeHtml from 'sanitize-html';
+
+import draftToHtml from 'draftjs-to-html';
 import { getBlocksWhereEntityData } from './utils';
 import EditorStyle from '../../UI/Editor/style';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import { fetchArticle, updateArticle, createArticle } from '../../actions/Admin';
 import { reset } from '../../actions/Success';
 import { clearError } from '../../actions/Error';
-
-import {
-  ItalicButton,
-  BoldButton,
-  UnderlineButton,
-  CodeButton,
-  HeadlineOneButton,
-  HeadlineTwoButton,
-  HeadlineThreeButton,
-  UnorderedListButton,
-  OrderedListButton,
-  BlockquoteButton,
-  CodeBlockButton,
-  AlignBlockCenterButton,
-  AlignBlockLeftButton,
-  AlignBlockRightButton,
-  AlignBlockDefaultButton
-} from 'draft-js-buttons';
-
-const undoPlugin = createUndoPlugin();
-const { UndoButton, RedoButton } = undoPlugin;
-
-const focusPlugin = createFocusPlugin();
-const resizeablePlugin = createResizeablePlugin();
-const blockDndPlugin = createBlockDndPlugin();
-const alignmentPlugin = createAlignmentPlugin();
-const { AlignmentTool } = alignmentPlugin;
-
-const hashtagPlugin = createHashtagPlugin();
-const linkifyPlugin = createLinkifyPlugin();
-
-const staticToolbarPlugin = createToolbarPlugin();
-const { Toolbar } = staticToolbarPlugin;
-
-const decorator = composeDecorators(
-  resizeablePlugin.decorator,
-  alignmentPlugin.decorator,
-  focusPlugin.decorator,
-  blockDndPlugin.decorator
-);
-
-const emojiPlugin = createEmojiPlugin({ decorator });
-const { EmojiSuggestions, EmojiSelect } = emojiPlugin;
-
-const imagePlugin = createImagePlugin({ decorator });
-const videoPlugin = createVideoPlugin({ decorator });
-
-const dragNDropFileUploadPlugin = createDragNDropUploadPlugin({
-  handleUpload: () => console.log('upload'), //write your image upload codes in upload.js
-  addImage: imagePlugin.addImage,
-});
-
-const plugins = [
-  emojiPlugin,
-  undoPlugin,
-  linkifyPlugin,
-  hashtagPlugin,
-  imagePlugin,
-  videoPlugin,
-  emojiPlugin,
-  alignmentPlugin,
-  resizeablePlugin,
-  blockDndPlugin,
-  dragNDropFileUploadPlugin,
-  staticToolbarPlugin
-];
+import { Editor } from 'react-draft-wysiwyg';
 
 class ArticleEditor extends React.Component {
 
   state = {
     editorState: EditorState.createEmpty(),
-    prevState: null,
     images: {},
     updated: false,
-    timeout: null
+    needUpdate: false,
+    timeouts: [],
+    currentTextAlignment: null
   };
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -112,34 +38,42 @@ class ArticleEditor extends React.Component {
     }
   }
 
+  editorIsEmpty(contentState) {
+    return !(contentState.hasText() && (contentState.getPlainText() !== '') && contentState !== EditorState.createEmpty());
+  }
+
   updateArticle() {
     const contentState = this.state.editorState.getCurrentContent();
-    const rawData = JSON.stringify(convertToRaw(contentState));
     const { articleId, isDraft } = this.props.match.params;
 
-    if (contentState !== EditorState.createEmpty() && !this.state.updated) {
-      
-      this.setState({ updated:true });
-      
+    if (!this.state.needUpdate) return ;
+
+    this.setState({ updated:true, needUpdate: false });
+    const rawData = draftToHtml(convertToRaw(contentState));
+
       if (articleId || (this.props.articles && this.props.articles.id)) {
-        console.log('update');
           this.props.updateArticle(this.props.user.id, articleId || this.props.articles.id, {
             raw_data: rawData,
             is_draft: !isDraft ? true : false
           });
       } else {
-        console.log('create');
           this.props.createArticle(this.props.user.id, {
             raw_data: rawData,
             is_draft: true
           });
       }
-    }
   }
 
-  // save published or draft article
   onChange = (editorState) => {
-    console.log('change');
+    const currentContent = this.state.editorState.getCurrentContent();
+    const newContent = editorState.getCurrentContent();
+
+    if (currentContent !== newContent && !this.editorIsEmpty(currentContent)) {
+      this.setState({
+        needUpdate: true
+      })
+    }
+
     this.setState({
       editorState: editorState
     });
@@ -155,22 +89,29 @@ class ArticleEditor extends React.Component {
     if (articleId) {
       this.props.fetchArticle(this.props.user.id, articleId);
       // will receive props
+      // EDIT : USE html to draft - render blocks.
       // this.setState({ editorState: EditorState.createWithContent(convertFromRaw(this.articles.raw_data)) })
     }
-    
-    this.setState({
+
+    // const selection = EditorState.getSelection();
+    // textAlignment 'left', 'center', and 'right'.
+      this.setState({ timeouts: [...this.state.timeouts,
+          setInterval(this.updateArticle.bind(this), 2000),
+          /*setTimeout(this.setResponsiveImage.bind(this, newContent), 750)*/
+        ]
+      });
+
+    /*this.setState({
       timeout: setInterval(this.updateArticle.bind(this), 3000)
-    });
+    });*/
     
     document.addEventListener("keydown", this.onKeyPressed.bind(this));
   }
 
   componentWillUnmount() {
-    clearInterval(this.state.timeout);
+    this.state.timeouts.forEach(timeout => clearInterval(timeout));
     document.removeEventListener("keydown", this.onKeyPressed.bind(this));
-  }      
-
-  handleEditorChange = editorState => this.setState({ editorState: editorState })
+  }
 
   onKeyPressed(e){
     if (event.keyCode === 9) {
@@ -178,100 +119,35 @@ class ArticleEditor extends React.Component {
     }
   }
 
-  handleDropFiles = (selection, files) => {
-    /*for (let i = 0; i < files.length; i++) {
-      
-      if (!files[i] instanceof Blob) continue;
-
-      let reader = new FileReader();
-      reader.readAsDataURL(files[i]);
-      
-      reader.onloadend = () => {
-        const res = reader.result;
-        const id = Date.now().toString(36) + Math.random().toString(36).substr(2);
-        if (!this.state.image[id]) {
-          this.setState({
-            images: {...images, [id] : res}
-          })
-          // save images to server
-        }
-      };
-    }*/
-  }
-
-  handlePastedFiles = (files) => {
-    //console.log(files);
-  }
-
-  // TODO: fix tabulation.
-  handleKeyBindings = e => {
-    if (e.keyCode === 9) {
-      const newEditorState = RichUtils.onTab(e, this.state.editorState, 6 /* maxDepth */);
-      this.handleEditorChange(newEditorState);
-      if (newEditorState !== this.state.editorState) {
-         this.handleEditorChange(newEditorState)
-      }
-  
-      return
-    }
-  
-    return getDefaultKeyBinding(e);
+  uploadImage = (file) => {
+    console.log(file);
+    return new Promise(
+      (resolve, reject) => {
+        // upload base 64 image & send path
+        resolve('test');
+    })
   }
 
   render() {
     const classes = this.props.classes;
 
+    // search by title
+    // title
+    // description
+    // image
+    // text editor
     return (
+      <UI.Container>
       <div className={classes.flex}>
         <div>
-          <Toolbar>
-          {
-              // may be use React.Fragment instead of div to improve perfomance after React 16
-              (externalProps) => (
-                <>
-                  <BoldButton {...externalProps} />
-                  <ItalicButton {...externalProps} />
-                  <UnderlineButton {...externalProps} />
-                  <CodeButton {...externalProps} />
-                  <UnorderedListButton {...externalProps} />
-                  <OrderedListButton {...externalProps} />
-                  <BlockquoteButton {...externalProps} />
-                  <Separator {...externalProps} />
-                  <HeadlineOneButton {...externalProps} />
-                  <HeadlineTwoButton {...externalProps} />
-                  <HeadlineThreeButton {...externalProps} />
-                  <Separator {...externalProps} />
-                  <div className={classes.customInlineButton}>
-                    <UndoButton {...externalProps}></UndoButton>
-                  </div>
-                  <div className={classes.customInlineButton}>
-                    <RedoButton {...externalProps}></RedoButton>
-                  </div>
-                  <Separator {...externalProps} />
-                  <div className={classes.customInlineButton}>
-                    <EmojiSelect></EmojiSelect>
-                  </div>
-                  { /* <AlignBlockCenterButton {...externalProps} />
-                    <AlignBlockLeftButton {...externalProps} />
-                    <AlignBlockRightButton {...externalProps} /> */
-                  }
-                </>
-              )
-            }
-          </Toolbar>
-        </div>
-        <div className={classes.editor}  onClick={this.focus}>
-            <Editor
-                editorState={this.state.editorState}
-                onChange={this.onChange}
-                plugins={plugins}
-                ref={(element) => { this.editor = element; }}
-                onKeyDown={this.onKeyPressed}
-                onTab={this.handleKeyBindings}
-                handleDroppedFiles={this.handleDropFiles}
-                handlePastedFiles={this.handlePastedFiles}
-            />
-            <EmojiSuggestions></EmojiSuggestions>
+          <Editor
+            editorState={this.state.editorState}
+            toolbarClassName="rdw-storybook-toolbar"
+            wrapperClassName="rdw-storybook-wrapper"
+            editorClassName="rdw-storybook-editor"
+            onEditorStateChange={this.onChange}
+            toolbar={{ image: { uploadCallback: this.uploadImage, alt: { present: true, mandatory: true } } }}
+          />
         </div>
         <div className={classes.btnCenter}>
           <UI.Button variant="contained" color="primary" component="span">
@@ -279,6 +155,7 @@ class ArticleEditor extends React.Component {
           </UI.Button>
         </div>
       </div>
+      </UI.Container>
     );
   }
 }

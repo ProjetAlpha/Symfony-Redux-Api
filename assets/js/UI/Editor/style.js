@@ -25,6 +25,7 @@ export default theme => ({
         background: '#fefefe'
     },
     btnCenter: {
+        marginTop:'10px',
         textAlign:'center'
     }
 });

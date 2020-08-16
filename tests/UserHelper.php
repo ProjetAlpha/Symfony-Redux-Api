@@ -5,6 +5,11 @@ namespace App\Tests;
 use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
+/**
+ * WARNING !
+ * Dont use static::login without static::register, you need to create a new user if you
+ * are using static::login, else your api token header is not set properly.
+ */
 class UserHelper extends WebTestCase
 {
     /**
@@ -51,6 +56,10 @@ class UserHelper extends WebTestCase
 
     protected static $isAdmin;
 
+    protected $articleTitle;
+
+    protected $articleDescription;
+
     protected function setUp(): void
     {
         $kernel = self::bootKernel();
@@ -69,7 +78,10 @@ class UserHelper extends WebTestCase
 
         $apiToken = static::$isAdmin ? $this->admin->getApiToken() : $this->user->getApiToken();
         $this->client = static::createClient([], ['HTTP_X-API-TOKEN' => $apiToken]);
+
         $this->htmlSample = '<html><body><p>Hello World</p></body></html>';
+        $this->articleDescription = 'Nice article john doe!';
+        $this->articleTitle = 'John Doe Is The Best';
     }
 
     /**
@@ -88,15 +100,15 @@ class UserHelper extends WebTestCase
         $user->setFirstname($firstname);
         $user->setLastname($lastname);
 
-        $user->setApiToken($apiToken);
+        $user->setApiToken(bin2hex(random_bytes(32)));
         $user->setExpireAtToken(time() + 60 * 60); // 1 hour token expiration
         $user->setConfirmationLink(null);
         $user->setRoles(['ROLE_USER', 'ROLE_API_USER', 'ROLE_ADMIN']);
         $user->setIsAdmin(true);
 
-        $this->admin = $user;
         $this->em->persist($user);
-        $this->em->flush();
+        //$this->em->flush();
+        $this->admin = $user;
 
         // create a standard user
         extract(UserHelper::createRandomUser());
@@ -108,15 +120,15 @@ class UserHelper extends WebTestCase
         $user->setFirstname($firstname);
         $user->setLastname($lastname);
 
-        $user->setApiToken($apiToken);
+        $user->setApiToken(bin2hex(random_bytes(32)));
         $user->setExpireAtToken(time() + 60 * 60);  // 1 hour token expiration
         $user->setConfirmationLink(null);
-        $user->setRoles(['ROLE_USER', 'ROLE_API_USER', 'ROLE_ADMIN']);
+        $user->setRoles(['ROLE_USER', 'ROLE_API_USER']);
         $user->setIsAdmin(false);
 
-        $this->user = $user;
         $this->em->persist($user);
         $this->em->flush();
+        $this->user = $user;
     }
 
     /**
@@ -126,12 +138,13 @@ class UserHelper extends WebTestCase
      */
     protected function createArticle($isDraft = false)
     {
-        static::loginUser($this->client, $this->admin->getEmail(), $this->originalAdminPassword);
         $adminId = $this->admin->getId();
 
         $this->client->request('POST', '/api/admin/'.$adminId.'/articles/create', [
             'is_draft' => $isDraft,
             'raw_data' => $this->htmlSample,
+            'title' => $this->articleTitle,
+            'description' => $this->articleDescription
         ], [], []);
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
@@ -188,9 +201,6 @@ class UserHelper extends WebTestCase
             ]
         );
 
-        if ($client->getResponse()->getStatusCode() == 500) {
-            dd($client->getResponse()->getContent());
-        }
         static::assertEquals($expectedResponse ? $expectedResponse : 201, $client->getResponse()->getStatusCode());
     }
 

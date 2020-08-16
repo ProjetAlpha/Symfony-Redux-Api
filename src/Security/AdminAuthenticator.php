@@ -50,8 +50,16 @@ class AdminAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        if ($_ENV['APP_ENV'] == 'dev') {
+        if ($_ENV['APP_ENV'] == 'dev' || $_ENV['APP_ENV'] == 'test') {
+            $path = $request->getRequestUri();
+            $matchAdminRoute = preg_match('#/api/admin/.*#', $path, $matches);
+            
             $this->logger->info(' *** Admin Token Check *** ', ['token' => $request->headers->get('X-API-TOKEN') ]);
+            $this->logger->info(' *** Match api admin route ***', ['match' => $matches]);
+        }
+
+        if (!$request->headers->has('X-API-TOKEN')) {
+            throw new UnauthorizedHttpException('WWW-Authenticate: Bearer realm="Api Token Missing"', 'Bad api token.');
         }
 
         return $request->headers->has('X-API-TOKEN');
@@ -67,6 +75,7 @@ class AdminAuthenticator extends AbstractGuardAuthenticator
         /*return [
             'userInfo' => $this->session->get('userInfo'),
         ];*/
+        
         return $request->headers->get('X-API-TOKEN');
     }
 
@@ -80,9 +89,9 @@ class AdminAuthenticator extends AbstractGuardAuthenticator
 
         $admin = $this->em->getRepository(User::class)
         ->findOneBy(['apiToken' => $credentials]);
-
+        
         if (!$admin || !$admin->getIsAdmin()) {
-            throw new BadRequestHttpException('Wrong admin credentials.');
+            throw new UnauthorizedHttpException('WWW-Authenticate: Bearer realm="Token Expired"', 'Wrong admin credentials.');
         }
 
         // expired token : send a refresh token.

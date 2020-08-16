@@ -1,9 +1,7 @@
 export default theme => ({
     root: {
-      marginTop: theme.spacing(3),
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center'
+        margin: theme.spacing(2),
+        backgroundColor: theme.palette.background.paper,
     },
     profil: {
       height: '100%'
