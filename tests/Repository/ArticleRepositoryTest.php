@@ -40,7 +40,8 @@ class ArticleRepositoryTest extends UserHelper
             'id' => $articleId,
             'is_draft' => false,
             'title' => $this->articleTitle,
-            'description' => $this->articleDescription
+            'description' => $this->articleDescription,
+            'cover_id' => null
             ]
         );
     }

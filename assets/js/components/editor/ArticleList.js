@@ -33,6 +33,7 @@ class ArticleList extends React.Component {
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         if (nextProps.articles !== this.props.articles) {
+            console.log(nextProps.articles);
             this.setState({
                 articles: nextProps.articles,
                 loading: false
@@ -61,7 +62,7 @@ class ArticleList extends React.Component {
         // const tagsRegex = /(?:<strong>|<i>|<b>|<h\d+>)([^<]*)/gm; // filter by tags
         const tagsRegex = /(<strong>|<i>|<b>|<h\d+>|<p>|<blockquote>)([^<]*)/gm; // key word
         const matchs = article.raw_data.match(tagsRegex);
-        console.log(matchs);
+        //console.log(matchs);
         let startIndex = 0;
         const target = matchs.find(match => {
             const state = match.toLowerCase().indexOf(search);

@@ -2,6 +2,7 @@
 
 namespace App\Tests\FileManagement;
 
+use App\Repository\ArticleRepository;
 use App\Tests\UserHelper;
 use App\Repository\ImageRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -137,8 +138,9 @@ class UploadFileTest extends UserHelper
     *
     * @return void
     */
-    public function testBase64ArticleCover()
+    public function testBase64ArticleCoverUpload()
     {
+        $articleId = $this->createArticle();
         $client = $this->client;
 
         // get a random image
@@ -153,7 +155,8 @@ class UploadFileTest extends UserHelper
             'name' => $image->getName(),
             'extension' => $image->getExtension(),
             'email' => $this->user->getEmail(),
-            'is_article_cover' => true
+            'is_article_cover' => true,
+            'extra_id' => $articleId
         ], [], []);
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
@@ -163,5 +166,21 @@ class UploadFileTest extends UserHelper
 
         $this->assertNotEmpty($image);
         $this->assertTrue($image->getIsArticleCover());
+
+        $article = static::$container->get(ArticleRepository::class)->findOneBy(['id' => $articleId]);
+        $this->assertEquals($article->getCoverId(), $image->getId());
+
+        $this->client->request('GET', '/api/admin/'.$this->admin->getId().'/articles/'.$articleId, [], [], ['HTTP_X-API-TOKEN' => $this->admin->getApiToken()]);
+        $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
+
+        static::assertJsonResponse($this->client, [
+        'user_id' => $this->admin->getId(),
+        'id' => $articleId,
+        'raw_data' => $this->htmlSample,
+        'is_draft' => false,
+        'title' => $this->articleTitle,
+        'description' => $this->articleDescription,
+        'cover_id' => $image->getId()
+        ]);
     }
 }

@@ -1,6 +1,6 @@
 export default theme => ({
     flex: {
-        margin: '30px',
+        margin: '3%',
     },
     customInlineButton: {
         display: 'inline-block',
@@ -27,5 +27,18 @@ export default theme => ({
     btnCenter: {
         marginTop:'10px',
         textAlign:'center'
+    },
+    header: {
+        display:'flex',
+        flexDirection:'column'
+    },
+    headerItems: {
+        backgroundColor: theme.palette.background.paper,
+        marginTop:'12px',
+        marginBottom:'12px',
+        padding:'15px'
+    },
+    mr_l_15: {
+        marginLeft: '15px'
     }
 });

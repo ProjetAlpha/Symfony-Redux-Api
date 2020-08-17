@@ -43,6 +43,11 @@ class Article
      */
     private $description;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $cover_id;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -104,6 +109,18 @@ class Article
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getCoverId(): ?int
+    {
+        return $this->cover_id;
+    }
+
+    public function setCoverId(?int $cover_id): self
+    {
+        $this->cover_id = $cover_id;
 
         return $this;
     }

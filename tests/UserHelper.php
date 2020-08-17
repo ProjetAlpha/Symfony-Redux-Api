@@ -140,12 +140,13 @@ class UserHelper extends WebTestCase
     {
         $adminId = $this->admin->getId();
 
+        // NB : for now, only admin user can create articles.
         $this->client->request('POST', '/api/admin/'.$adminId.'/articles/create', [
             'is_draft' => $isDraft,
             'raw_data' => $this->htmlSample,
             'title' => $this->articleTitle,
             'description' => $this->articleDescription
-        ], [], []);
+        ], [], ['HTTP_X-API-TOKEN' => $this->admin->getApiToken()]);
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
         

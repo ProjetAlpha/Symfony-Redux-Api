@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Image;
 use App\Entity\User;
 use App\Traits\EmailMessage;
+use App\Entity\Article;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -153,6 +154,7 @@ class ApiController extends AbstractController
         $name = $request->request->get('name');
         $extension = $request->request->get('extension');
         $isArticleCover = $request->request->get('is_article_cover');
+        $extraId = $request->request->get('extra_id');
 
         if (!$imageData || !$email) {
             throw new BadRequestHttpException('Unexpected request input.');
@@ -167,7 +169,8 @@ class ApiController extends AbstractController
         }
 
         $userId = $user->getId();
-        $bin = base64_decode($imageData);
+        $formatBase64 = preg_replace('#^data:image/[^;]+;base64,#', '', $imageData);
+        $bin = base64_decode($formatBase64);
         $im = imagecreatefromstring($bin);
 
         if (!$im) {
@@ -194,8 +197,34 @@ class ApiController extends AbstractController
 
         // save image informations
         $this->entityManager->persist($imageModel);
-
         $this->entityManager->flush();
+
+        if ($isArticleCover && is_numeric($extraId)) {
+            $article = $this->entityManager
+            ->getRepository(Article::class)
+            ->findOneBy(['id' => $extraId]);
+
+            if (!$article) {
+                throw new NotFoundHttpException('Unexpected article id.');
+            }
+            
+            if ($article->getCoverId()) {
+                $image = $this->entityManager
+                        ->getRepository(Image::class)
+                        ->findOneBy(['id' => $article->getCoverId()]);
+                
+                if (file_exists($image->getPath())) {
+                    unlink($image->getPath());
+                }
+                
+                $this->entityManager->remove($image);
+                $this->entityManager->flush();
+            }
+            
+            $article->setCoverId($imageModel->getId());
+            $this->entityManager->persist($article);
+            $this->entityManager->flush();
+        }
 
         return new JsonResponse([
             'name' => $imageModel->getName(),

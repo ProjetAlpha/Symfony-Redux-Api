@@ -1,6 +1,6 @@
 import client from '.';
 
-const baseUrl = 'api/image';
+const baseUrl = 'image';
 
 export const fetchImage = user => {
   return dispatch => {
@@ -16,12 +16,7 @@ export const fetchImage = user => {
 
 export const uploadImage = (user, image) => {
   return dispatch => {
-      client.post(`${baseUrl}/upload`, {
-          name: image.name,
-          email: user.email,
-          base64_image: image.base64_image,
-          extension: image.extension
-      }).then(res =>
+      client.post(`${baseUrl}/upload`, image).then(res =>
         dispatch({ type: 'UPLOAD_IMAGE', data: res.data })
       ).catch(err =>
         dispatch({ type: 'ADD_ERROR', error: err.response.data })
