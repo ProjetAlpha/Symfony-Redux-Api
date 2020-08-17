@@ -12,7 +12,7 @@
     "license": "UNLICENSED",
     "private": true,
     "scripts": {
-        "dev-server": "set PORT=8080 && encore dev-server --hot --history-api-fallback --port 9000 --disable-host-check",
+        "dev-server": "set PORT=8080 && encore dev-server --hot --history-api-fallback --inline --port 9000 --disable-host-check",
         "dev": "set PORT=8080 && encore dev",
         "watch": "set PORT=8080 && encore dev --watch",
         "build": "encore production --progress"
@@ -30,6 +30,7 @@
         "dotenv": "^8.2.0",
         "draft-js": "^0.11.6",
         "draft-js-alignment-plugin": "^2.0.6",
+        "draft-js-custom-styles": "^2.1.1",
         "draft-js-drag-n-drop-plugin": "^2.0.4",
         "draft-js-dragndrop-upload-plugin": "^2.0.3",
         "draft-js-emoji-plugin": "^2.1.3",
@@ -42,14 +43,20 @@
         "draft-js-static-toolbar-plugin": "^3.0.1",
         "draft-js-undo-plugin": "^2.0.3",
         "draft-js-video-plugin": "^2.0.2",
+        "draftjs-to-html": "^0.9.1",
+        "draftjs-utils": "^0.10.2",
+        "prop-types": "^15.7.2",
         "react": "^16.13.1",
         "react-dom": "^16.13.1",
+        "react-draft-wysiwyg": "^1.14.5",
         "react-redux": "^7.2.0",
         "react-router": "^5.2.0",
         "react-router-dom": "^5.2.0",
         "react-router-redux": "^4.0.8",
         "redux": "^4.0.5",
         "redux-thunk": "^2.3.0",
+        "sanitize-html": "^1.27.3",
+        "sanitize-html-react": "^1.13.0",
         "semantic-ui-css": "^2.4.1",
         "semantic-ui-react": "^0.88.2"
     }

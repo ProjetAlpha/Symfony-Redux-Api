@@ -39,6 +39,8 @@ class ArticleRepositoryTest extends UserHelper
             'raw_data' => $this->htmlSample,
             'id' => $articleId,
             'is_draft' => false,
+            'title' => $this->articleTitle,
+            'description' => $this->articleDescription
             ]
         );
     }
@@ -63,6 +65,6 @@ class ArticleRepositoryTest extends UserHelper
 
         $json = static::assertJsonResponse($this->client);
 
-        $this->assertCount(2, $json);
+        $this->assertTrue(count($json) >= 2);
     }
 }

@@ -8,6 +8,8 @@ export const login = user => {
             password: user.password
       }).then(res => {
         Auth.setUser(res.data);
+        console.log(res.data.token);
+        Auth.setAuthToken(client, res.data.token);
         dispatch({ type: 'LOGIN', data: res.data })
       }
       ).catch(err => {
@@ -51,5 +53,14 @@ export const logout = user => {
 export const resetSuccess = () => {
   return dispatch => {
     dispatch({ type: 'RESET_SUCCESS'})
+  }
+}
+
+export const setAuthToken = (axios, token) => {
+  axios.defaults.headers.common['Authorization'] = '';
+  delete axios.defaults.headers.common['Authorization'];
+
+  if (token) {
+    axios.defaults.headers.common['Authorization'] = `${token}`;
   }
 }

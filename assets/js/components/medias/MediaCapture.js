@@ -48,19 +48,22 @@ class MediaCapture extends React.Component {
                     </IconButton>
                 </label>
 
-                <input
+                {
+                /*
+                    <input
                     accept="video/*"
                     capture="camcorder"
                     className={classes.input}
                     id="icon-button-video"
                     onChange={this.handleCapture}
                     type="file"
-                />
-                <label htmlFor="icon-button-video">
-                    <IconButton color="primary" component="span">
+                    />
+                    <label htmlFor="icon-button-video">
+                        <IconButton color="primary" component="span">
                         <Videocam />
-                    </IconButton>
-                </label>
+                        </IconButton>
+                    </label>*/
+                }
             </Fragment>
         );
     }

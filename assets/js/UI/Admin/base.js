@@ -23,6 +23,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import Icon from '@material-ui/core/Icon';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 export {
     Alert,
@@ -50,5 +51,6 @@ export {
     Icon,
     DeleteIcon,
     Snackbar,
-    MuiAlert
+    MuiAlert,
+    CircularProgress
  };

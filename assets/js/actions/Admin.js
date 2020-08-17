@@ -56,8 +56,10 @@ export const fetchArticle = (adminId, articleId) => {
       dispatch({ type: 'ADMIN_FETCH_ARTICLE' })
       dispatch({ type: 'REQUEST_SUCCESS' })
     }
-    ).catch(err =>
-        dispatch({ type: 'ADD_ERROR', error: err.response.data })
+    ).catch(err => {
+        if (err.response && err.response.data)
+          dispatch({ type: 'ADD_ERROR', error: err.response })
+      }
     )
   }
 }

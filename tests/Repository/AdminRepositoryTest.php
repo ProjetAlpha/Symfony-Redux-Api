@@ -28,8 +28,6 @@ class AdminRepositoryTest extends UserHelper
      */
     public function testIfAnAdminUserIsAuthorized()
     {
-        static::loginUser($this->client, $this->admin->getEmail(), $this->originalAdminPassword);
-
         $this->client->request('POST', '/api/admin/me', ['email' => $this->admin->getEmail()], [], []);
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
@@ -187,6 +185,8 @@ class AdminRepositoryTest extends UserHelper
         $this->client->request('POST', '/api/admin/'.$adminId.'/articles/'.$articleId.'/update', [
             'is_draft' => false,
             'raw_data' => $this->htmlSample,
+            'title' => $this->articleTitle,
+            'description' => $this->articleDescription
         ], []);
 
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
@@ -216,6 +216,8 @@ class AdminRepositoryTest extends UserHelper
         'id' => $articleId,
         'raw_data' => $this->htmlSample,
         'is_draft' => true,
+        'title' => $this->articleTitle,
+        'description' => $this->articleDescription
         ]);
     }
 

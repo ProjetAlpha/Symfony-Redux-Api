@@ -26,8 +26,8 @@ class UserRepositoryTest extends UserHelper
         // find api user token
         $client->request('POST', '/api/me/', [], [], ['HTTP_X-API-TOKEN' => $apiToken]);
 
-        // test bad response status code
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        // unauthorized response status code
+        $this->assertEquals(401, $client->getResponse()->getStatusCode());
     }
 
     /**

@@ -286,6 +286,13 @@ class RegistrationController extends AbstractController
             $userSession->setExpireAt(time() + (7 * 24 * 60 * 60));
             $session->set('userInfo', $userSession);
 
+            $token = bin2hex(random_bytes(32));
+            $user->setApiToken($token);
+            $user->setExpireAtToken(time() + 60 * 60);
+
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+
             return new JsonResponse([
                 'email' => $user->getEmail(),
                 'id' => $user->getId(),
@@ -293,6 +300,7 @@ class RegistrationController extends AbstractController
                 'lastname' => $user->getLastname(),
                 'isAdmin' => $user->getIsAdmin(),
                 'isConfirmed' => null === $user->getConfirmationLink(),
+                'token' => $token
             ], Response::HTTP_OK);
         }
 
@@ -302,16 +310,33 @@ class RegistrationController extends AbstractController
     /**
      * @Route("/api/logout", name="logout")
      */
-    public function logout(SessionInterface $session): Response
+    public function logout(Request $request, SessionInterface $session): Response
     {
+        $apiToken = $request->headers->get('X-API-TOKEN');
+
+        if (!$apiToken) {
+            throw new BadRequestHttpException('Bad api request input.');
+        }
+
         if ($session->get('userInfo')) {
             $session->invalidate();
-
-            return new Response('Login OK.', Response::HTTP_OK);
         }
-        $session->invalidate();
 
-        return new Response('Unexpected logout request.', Response::HTTP_BAD_REQUEST);
+        $user = $this->entityManager
+        ->getRepository(User::class)
+        ->findOneBy(['apiToken' => $apiToken]);
+
+        if (!$user) {
+            throw new NotFoundHttpException('Unexpected user.');
+        }
+
+        // invalidate api token
+        $user->setExpireAtToken(time() - 60 * 60);
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return new Response('Logout OK.', Response::HTTP_OK);
     }
 
     /*

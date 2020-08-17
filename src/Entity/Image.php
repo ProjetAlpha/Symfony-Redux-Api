@@ -33,6 +33,11 @@ class Image
      */
     private $name;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $is_article_cover;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -70,6 +75,18 @@ class Image
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getIsArticleCover(): ?bool
+    {
+        return $this->is_article_cover;
+    }
+
+    public function setIsArticleCover(?bool $is_article_cover): self
+    {
+        $this->is_article_cover = $is_article_cover;
 
         return $this;
     }

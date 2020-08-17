@@ -9,6 +9,8 @@ import * as UI from '../UI/Admin/base';
 import Pagination from './main/Pagination';
 import CustomSnackBar from './main/CustomSnackBar';
 import { getUsers, removeUserById } from '../actions/Admin';
+import Search from './main/Search';
+
 import AdminStyle from '../UI/Admin/style';
 
 // ****** TODO : handle custom dialog and snackbar with redux states ******
@@ -17,17 +19,28 @@ class Admin extends React.Component {
     state = {
         triggerDialog: false,
         triggerSnack: false,
-        user: {}
+        user: {},
+        users: [],
+        loading: true
     }
 
     componentDidMount() {
         if (!this.props.users)
             this.props.getUsers();
+        else {
+            this.setState({
+                users: this.props.users,
+                loading: false
+            })
+        }
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         if (nextProps.users !== this.props.users) {
-            // console.log(nextProps.users);
+            this.setState({
+                users: nextProps.users,
+                loading: false
+            })
         }
     }
 
@@ -54,14 +67,31 @@ class Admin extends React.Component {
         }))
     }
 
+    update(users) {
+        this.setState({
+            users: users
+        })
+    }
+
     render() {
         const classes = this.props.classes;
         return (
-            <UI.Container component="main" maxWidth="xs">
+            <UI.Container>
                 <div className={classes.root}>
-
                     <UI.List className={classes.root}>
-                        {this.props.users && <Pagination baseUrl={'/admin'} maxItem={10} data={this.props.users} render={
+                            <UI.ListItem className={classes.searchItem}>
+                                <Search
+                                    filterData={(search, data) =>
+                                    -1 !== data.lastname.toLowerCase().indexOf(search)
+                                    || -1 !== data.firstname.toLowerCase().indexOf(search)
+                                    || -1 !== data.email.toLowerCase().indexOf(search)}
+                                    data={this.state.users || []}
+                                    update={ (users) => this.update(users) }
+                                    reset={ (users) => this.update(users) }
+                                    isLoading={this.state.loading}
+                                />
+                            </UI.ListItem>
+                        {this.state.users && <Pagination baseUrl={'/admin'} maxItem={10} data={this.state.users} render={
                             (user, index) => (
                                 <div key={index}>
                                     <UI.ListItem key={index}>

@@ -33,21 +33,23 @@ class Profil extends React.Component {
     const classes = this.props.classes;
 
     return (
-      <div className={classes.root}>
-        <div className={classes.profil}>
-          <UI.List aria-label="user profil info">
-            {
-              this.state.user &&
-              Object.entries(this.state.user).map(([key, value], i) =>
-                <UI.ListItem button key={i}>
-                  <UI.ListItemText className={classes.item} primary={key} />
-                  <UI.ListItemText className={classes.item} secondary={value} />
-                </UI.ListItem>
-              )
-            }
-          </UI.List>
+      <UI.Container component="main" maxWidth="xs">
+        <div className={classes.root}>
+          <div className={classes.profil}>
+            <UI.List aria-label="user profil info">
+              {
+                this.state.user &&
+                Object.entries(this.state.user).map(([key, value], i) =>
+                  <UI.ListItem button key={i}>
+                    <UI.ListItemText className={classes.item} primary={key} />
+                    <UI.ListItemText className={classes.item} secondary={value} />
+                  </UI.ListItem>
+                )
+              }
+            </UI.List>
+          </div>
         </div>
-      </div>
+      </UI.Container>
     );
   }
 }

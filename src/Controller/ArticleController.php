@@ -111,6 +111,8 @@ class ArticleController extends AbstractController
         return new JsonResponse([
             'is_draft' => $article->getIsDraft(),
             'raw_data' => $article->getRawData(),
+            'title' => $article->getTitle(),
+            'description' => $article->getDescription(),
             'id' => $article->getId(),
             'user_id' => $article->getUserId()->getId(),
         ], Response::HTTP_OK);
@@ -139,6 +141,8 @@ class ArticleController extends AbstractController
         return new JsonResponse([
             'raw_data' => $article->getRawData(),
             'is_draft' => $article->getIsDraft(),
+            'title' => $article->getTitle(),
+            'description' => $article->getDescription(),
             'id' => $article->getId(),
         ], Response::HTTP_OK);
     }
@@ -151,8 +155,11 @@ class ArticleController extends AbstractController
         $userId = $request->attributes->get('admin_id');
         $isDraft = $request->request->get('is_draft');
         $data = $request->request->get('raw_data');
+        
+        $title = $request->request->get('title');
+        $description = $request->request->get('description');
 
-        if (!$userId || !is_numeric($userId)) {
+        if (!$userId || !is_numeric($userId) || !$title) {
             throw new NotFoundHttpException('Unexpected article id.');
         }
 
@@ -168,6 +175,8 @@ class ArticleController extends AbstractController
         $article->setUserId($user);
         $article->setIsDraft($isDraft ?? false);
         $article->setRawData($data);
+        $article->setTitle($title);
+        $article->setDescription($description);
 
         $this->entityManager->persist($article);
         $this->entityManager->flush();
@@ -184,8 +193,11 @@ class ArticleController extends AbstractController
         $articleId = $request->attributes->get('article_id');
         $isDraft = $request->request->get('is_draft') ?? false;
         $rawData = $request->request->get('raw_data');
+        
+        $title = $request->request->get('title');
+        $description = $request->request->get('description');
 
-        if (!$userId || !$articleId) {
+        if (!$userId || !$articleId || !$title || !$description) {
             throw new NotFoundHttpException('Unexpected admin article update');
         }
 
@@ -202,6 +214,8 @@ class ArticleController extends AbstractController
         ->findOneBy(['id' => $articleId]);
 
         $article->setRawData($rawData);
+        $article->setTitle($title);
+        $article->setDescription($description);
         $article->setIsDraft($isDraft);
 
         $this->entityManager->persist($article);

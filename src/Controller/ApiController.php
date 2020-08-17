@@ -71,6 +71,36 @@ class ApiController extends AbstractController
 
         return new JsonResponse(['email' => $user->getEmail(), 'api_token' => $user->getApiToken()], 200);
     }
+    
+    /**
+     * @Route("/api/public/token/refresh/{id}", name="refresh_token")
+     */
+    public function refreshToken(Request $request): JsonResponse
+    {
+        $token = $request->attributes->get('id');
+
+        if (null == $token) {
+            throw new BadRequestHttpException('Unexpected api token.');
+        }
+
+        $user = $this->entityManager
+        ->getRepository(User::class)
+        ->findOneBy(['refresh_token' => $token]);
+
+        if (null == $user) {
+            throw new NotFoundHttpException('Unexpected user api token.');
+        }
+
+        $newToken = bin2hex(random_bytes(32));
+        $user->setApiToken($newToken);
+        $user->setExpireAtToken(time() + 60 * 60);
+        $user->setRefreshToken(null);
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return new JsonResponse(['token' => $newToken], Response::HTTP_OK);
+    }
 
     /**
      * @Route("/api/public/mail/send", name="send_mail")
@@ -122,6 +152,7 @@ class ApiController extends AbstractController
         $email = $request->request->get('email');
         $name = $request->request->get('name');
         $extension = $request->request->get('extension');
+        $isArticleCover = $request->request->get('is_article_cover');
 
         if (!$imageData || !$email) {
             throw new BadRequestHttpException('Unexpected request input.');
@@ -157,10 +188,11 @@ class ApiController extends AbstractController
         $imageModel = new Image();
         $imageModel->setPath($destination);
         $imageModel->setName($name);
+        $imageModel->setIsArticleCover($isArticleCover);
 
         $user->addImage($imageModel);
 
-        // save image in database
+        // save image informations
         $this->entityManager->persist($imageModel);
 
         $this->entityManager->flush();
@@ -198,6 +230,7 @@ class ApiController extends AbstractController
                 'id' => $image->getId(),
                 'name' => $image->getName(),
                 'user_id' => $image->getUserId()->getId(),
+                'is_article_cover' => $image->getIsArticleCover()
             ];
         }
 
