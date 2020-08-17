@@ -3,6 +3,7 @@
 namespace App\Tests\FileManagement;
 
 use App\Tests\UserHelper;
+use App\Repository\ImageRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class UploadFileTest extends UserHelper
@@ -127,7 +128,40 @@ class UploadFileTest extends UserHelper
 
         // check if file is in DB & is uploaded.
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
+    }
 
-        // check if user profil has image
+    /**
+    * Test if a standard user with a valid token can upload an article cover.
+    *
+    * @group upload-image
+    *
+    * @return void
+    */
+    public function testBase64ArticleCover()
+    {
+        $client = $this->client;
+
+        // get a random image
+        $testImagePath = $client->getKernel()->getContainer()->getParameter('image_test');
+        $image = new TestImage($testImagePath, true);
+
+        // api accepts base64image upload
+        $base64Image = base64_encode(file_get_contents($image->getPath()));
+
+        $client->request('POST', '/api/image/upload', [
+            'base64_image' => $base64Image,
+            'name' => $image->getName(),
+            'extension' => $image->getExtension(),
+            'email' => $this->user->getEmail(),
+            'is_article_cover' => true
+        ], [], []);
+
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $json = static::assertJsonResponse($client, 'id');
+
+        $image = static::$container->get(ImageRepository::class)->findOneBy(['id' => $json['id']]);
+
+        $this->assertNotEmpty($image);
+        $this->assertTrue($image->getIsArticleCover());
     }
 }

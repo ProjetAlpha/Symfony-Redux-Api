@@ -152,6 +152,7 @@ class ApiController extends AbstractController
         $email = $request->request->get('email');
         $name = $request->request->get('name');
         $extension = $request->request->get('extension');
+        $isArticleCover = $request->request->get('is_article_cover');
 
         if (!$imageData || !$email) {
             throw new BadRequestHttpException('Unexpected request input.');
@@ -187,10 +188,11 @@ class ApiController extends AbstractController
         $imageModel = new Image();
         $imageModel->setPath($destination);
         $imageModel->setName($name);
+        $imageModel->setIsArticleCover($isArticleCover);
 
         $user->addImage($imageModel);
 
-        // save image in database
+        // save image informations
         $this->entityManager->persist($imageModel);
 
         $this->entityManager->flush();
@@ -228,6 +230,7 @@ class ApiController extends AbstractController
                 'id' => $image->getId(),
                 'name' => $image->getName(),
                 'user_id' => $image->getUserId()->getId(),
+                'is_article_cover' => $image->getIsArticleCover()
             ];
         }
 
