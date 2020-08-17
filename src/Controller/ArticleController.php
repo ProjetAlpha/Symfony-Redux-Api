@@ -69,6 +69,9 @@ class ArticleController extends AbstractController
                 'raw_data' => $article->getRawData(),
                 'id' => $article->getId(),
                 'user_id' => $article->getUserId()->getId(),
+                'cover_id' => $article->getCoverId(),
+                'title' => $article->getTitle(),
+                'description' => $article->getDescription()
             ];
         }
 
@@ -80,7 +83,7 @@ class ArticleController extends AbstractController
      */
     public function all()
     {
-        // all published articles, non draft
+        // all published articles, no draft
         $articles = $this->entityManager
         ->getRepository(Article::class)
         ->getAllPublished();
@@ -115,6 +118,7 @@ class ArticleController extends AbstractController
             'description' => $article->getDescription(),
             'id' => $article->getId(),
             'user_id' => $article->getUserId()->getId(),
+            'cover_id' => $article->getCoverId()
         ], Response::HTTP_OK);
     }
 
@@ -144,6 +148,7 @@ class ArticleController extends AbstractController
             'title' => $article->getTitle(),
             'description' => $article->getDescription(),
             'id' => $article->getId(),
+            'cover_id' => $article->getCoverId()
         ], Response::HTTP_OK);
     }
 
@@ -191,6 +196,7 @@ class ArticleController extends AbstractController
     {
         $userId = $request->attributes->get('admin_id');
         $articleId = $request->attributes->get('article_id');
+
         $isDraft = $request->request->get('is_draft') ?? false;
         $rawData = $request->request->get('raw_data');
         

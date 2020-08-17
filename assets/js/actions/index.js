@@ -30,9 +30,7 @@ let apiReq = [];
  * 
  * @return  void
  */
-client.interceptors.response.use(response => {
-  return response;
-}, error => {
+client.interceptors.response.use(response => response, error => {
   if (error.response && (error.response.status === 401 || error.response.status === 403)) {
     if (error.response.status === 401) {
       if (error.response.data && error.response.data.refresh_token) {
@@ -43,7 +41,13 @@ client.interceptors.response.use(response => {
                 
                 // retry the current request with a fresh api token
                 error.config.headers['X-API-TOKEN'] = res.data.token;
-                return client.request(error.config);
+                return new Promise((resolve, reject) => {
+                  client.request(error.config).then(response => {
+                    resolve(response);
+                  }).catch((error) => {
+                    reject(error);
+                  })
+                });
               })
               .catch(err => {
                 logoutOnResponseError(error.response.status);
@@ -60,12 +64,6 @@ client.interceptors.response.use(response => {
   } else {
     return Promise.reject(error);
   }
-});
-
-client.interceptors.request.use(request => {
- return request;
-}, error => {
-  return Promise.reject(error);
 });
 
 export default client;

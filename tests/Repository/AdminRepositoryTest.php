@@ -217,7 +217,8 @@ class AdminRepositoryTest extends UserHelper
         'raw_data' => $this->htmlSample,
         'is_draft' => true,
         'title' => $this->articleTitle,
-        'description' => $this->articleDescription
+        'description' => $this->articleDescription,
+        'cover_id' => null
         ]);
     }
 

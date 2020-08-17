@@ -1,6 +1,7 @@
 const initialState = {
     users: null,
     articles: null,
+    article: null,
     success: null
 }
   
@@ -24,7 +25,7 @@ export default function Admin(state = initialState, action = {}) {
       case 'ADMIN_FETCH_ARTICLE': {
         return {
           ...state,
-          articles: [...state.articles, action.data],
+          article: action.data,
           success: true
         }
       }
@@ -32,7 +33,7 @@ export default function Admin(state = initialState, action = {}) {
       case 'ADMIN_CREATE_ARTICLE': {
         return {
           ...state,
-          articles: action.data,
+          article: action.data,
           success: true
         }
       }
@@ -40,7 +41,7 @@ export default function Admin(state = initialState, action = {}) {
       case 'ADMIN_UPDATE_ARTICLE': {
         return {
           ...state,
-          articles: action.data,
+          article: action.data,
           success: true
         }
       }
