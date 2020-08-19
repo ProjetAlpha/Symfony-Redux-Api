@@ -4,6 +4,8 @@ import { connect } from "react-redux";
 import { Modifier, convertToRaw, EditorState, AtomicBlockUtils, RichUtils, getDefaultKeyBinding, convertFromRaw, KeyBindingUtil, ContentState } from "draft-js";
 import sanitizeHtml from 'sanitize-html';
 
+import CustomDialog from '../main/CustomDialog';
+import CustomSnackBar from '../main/CustomSnackBar';
 import draftToHtml from 'draftjs-to-html';
 import htmlToDraft from 'html-to-draftjs';
 import { getBlocksWhereEntityData } from './utils';
@@ -28,15 +30,23 @@ class ArticleEditor extends React.Component {
     title: '',
     description: '',
     isDraft: false,
-    articleId: null
+    articleId: null,
+    triggerDialog: false,
+    feedback: false
   };
 
   UNSAFE_componentWillReceiveProps(nextProps) {
 
     if (nextProps.article && nextProps.article !== this.props.article) {
       // ---> Edit Mode => this.loadArticleHtml(nextProps.article); load image & title & description
-      // create mode
-      // info : sauvegarder ou publier.
+      
+      if (this.state.feedback) {
+        this.setState({
+          triggerSnack: true,
+          feedback: false
+        })
+      }
+
       if (this.state.imageUpdate) {
         this.props.uploadImage(this.props.user, {
           email: this.props.user.email,
@@ -69,10 +79,17 @@ class ArticleEditor extends React.Component {
     return !(contentState.hasText() && (contentState.getPlainText() !== '') && contentState !== EditorState.createEmpty());
   }
 
-  updateArticle(isDraft = false) {
+  updateArticle(isDraft = false, feedback = false) {
+
+    if (feedback) {
+      this.setState({
+        feedback: true
+      })
+    }
+
     const contentState = this.state.editorState.getCurrentContent();
 
-    if (!this.state.textUpdate && !this.state.imageUpdate) return;
+    if (!this.state.textUpdate && !this.state.imageUpdate && !feedback) return;
 
     this.setState({ textUpdate: false });
     const rawData = draftToHtml(convertToRaw(contentState));
@@ -168,6 +185,12 @@ class ArticleEditor extends React.Component {
     })
   }
 
+  handleSnackBar() {
+    this.setState(prevState => ({
+        triggerSnack: !prevState.triggerSnack
+    }))
+  }
+
   uploadImage = (file) => {
     console.log(file);
     return new Promise(
@@ -180,11 +203,6 @@ class ArticleEditor extends React.Component {
   render() {
     const classes = this.props.classes;
 
-    // search by title
-    // title
-    // description
-    // image
-    // text editor
     return (
       <UI.Container>
         <div className={classes.flex}>
@@ -200,12 +218,19 @@ class ArticleEditor extends React.Component {
             />
           </div>
           <div className={classes.btnCenter}>
-          <UI.Button variant="contained" variant="outlined" color="primary" component="span" onClick={this.updateArticle.bind(this, true)}>
-              Publish
+            <UI.Button variant="contained" variant="outlined" color="primary" component="span" onClick={this.updateArticle.bind(this, false, true)}>
+              Publish article
           </UI.Button>
-          <UI.Button className={classes.mr_l_15} variant="contained" variant="outlined" color="secondary" onClick={this.updateArticle.bind(this, false)}>
-              Save
+            <UI.Button className={classes.mr_l_15} variant="contained" variant="outlined" color="secondary" onClick={this.updateArticle.bind(this, true, true)}>
+              Save to drafts
           </UI.Button>
+          <CustomSnackBar
+              open={this.state.triggerSnack ? true : false}
+              time={3500}
+              position={{ vertical: 'bottom', horizontal: 'right' }}
+              message={{ error: 'An error occured during article upload', success: 'Successfully saved article' }}
+              onClose={this.handleSnackBar.bind(this)}
+          />
           </div>
         </div>
       </UI.Container>

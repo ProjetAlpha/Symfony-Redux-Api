@@ -13,11 +13,11 @@ const store = configureStore(/* provide initial state if any */);
 
 ReactDOM.render(
     <Provider store={store}>
-      <ConnectedRouter history={history}>
-        { /* location change listener doesn't work with <BrowserRouter> */ }
+        <ConnectedRouter history={history}>
+          { /* location change listener doesn't work with <BrowserRouter> */ }
           <App />
-        { /* </BrowserRouter> */ }
-      </ConnectedRouter>
+          { /* </BrowserRouter> */ }
+        </ConnectedRouter>
     </Provider>,
   document.getElementById('root')
 );

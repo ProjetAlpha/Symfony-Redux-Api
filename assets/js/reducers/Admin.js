@@ -53,6 +53,18 @@ export default function Admin(state = initialState, action = {}) {
           success: true
         }
       }
+
+      case 'ADMIN_DELETE_ARTICLE': {
+        console.log(action.data.id);
+        console.log(state.articles);
+        return {
+          ...state,
+          articles: state.articles.filter(item => {
+            console.log(item.id, action.data.id)
+            return item.id !== action.data.id;
+          })
+        }
+      }
   
       default:
         return state;

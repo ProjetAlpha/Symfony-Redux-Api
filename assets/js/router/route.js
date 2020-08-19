@@ -15,6 +15,7 @@ import ResetPassword from '../components/ResetPassword';
 import ResetPasswordLink from '../components/ResetPasswordLink';
 import ArticleEditor from '../components/editor/ArticleEditor';
 import ArticleList from '../components/editor/ArticleList';
+import Article from '../components/editor/Article';
 
 import NotFound from '../components/main/NotFound';
 import { withStyles } from '@material-ui/core/styles';
@@ -49,9 +50,11 @@ class App extends Component {
           <AdminRoute restricted={true} component={Admin} path="/admin" exact />
           
           <AdminRoute restricted={true} component={ArticleEditor} path="/articles/new" exact />
-          <AdminRoute restricted={true} component={ArticleList} path="/articles" exact />
+          <AdminRoute restricted={true} component={() => <ArticleList isDraft={false}/>} path="/articles/release/" exact />
+          <AdminRoute restricted={true} component={() => <ArticleList isDraft={true}/>} path="/articles/drafts/" exact />
 
-          <AdminRoute restricted={true} component={ArticleEditor} path="/article/:articleId/:isDraft" exact />
+          <AdminRoute restricted={true} component={Article} path="/articles/:articleId/view" exact />
+          <AdminRoute restricted={true} component={ArticleEditor} path="/articles/:articleId/edit" exact />
           
           <Route component={NotFound} />
         </Switch>

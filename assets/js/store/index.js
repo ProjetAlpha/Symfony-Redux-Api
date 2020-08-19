@@ -3,7 +3,7 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 import { createBrowserHistory } from 'history';
 import { routerMiddleware } from 'connected-react-router';
 import thunk from 'redux-thunk';
-import reducers from '../reducers/index';
+import createRootReducer from '../reducers/index';
 
 export const history = createBrowserHistory();
 
@@ -15,7 +15,7 @@ export const history = createBrowserHistory();
 
 export default function configureStore(preloadedState) {
   const store = createStore(
-    reducers(history), // root reducer with router state
+    createRootReducer(history), // root reducer with router state
     preloadedState,
     process.env.NODE_ENV == 'production' ? compose(
       applyMiddleware(

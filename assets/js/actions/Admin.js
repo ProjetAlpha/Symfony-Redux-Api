@@ -9,6 +9,7 @@ export const getUsers = () => {
         dispatch({ type: 'GET_USERS', data: res.data })
       }
       ).catch(err => {
+          axiosRequestDebug(err);
           dispatch({ type: 'ADD_ERROR', error: err.response.data })
         }
       )
@@ -21,6 +22,7 @@ export const removeUserById = id => {
           dispatch({ type: 'REMOVE_USER', data: res.data })
       }
       ).catch(err => {
+          axiosRequestDebug(err);
           dispatch({ type: 'ADD_ERROR', error: err.response.data })
         }
       )
@@ -58,7 +60,7 @@ export const updateArticle = (adminId, articleId, data) => {
 export const fetchArticle = (adminId, articleId) => {
   return dispatch => {
     client.get(`${baseUrl}/${adminId}/articles/${articleId}`).then(res => {
-      dispatch({ type: 'ADMIN_FETCH_ARTICLE' })
+      dispatch({ type: 'ADMIN_FETCH_ARTICLE', data: res.data })
       dispatch({ type: 'REQUEST_SUCCESS' })
     }
     ).catch(err => {
@@ -75,8 +77,22 @@ export const fetchAllArticle = (adminId, data) => {
     client.post(`${baseUrl}/${adminId}/articles`, data).then(res => {
       dispatch({ type: 'ADMIN_FETCH_ALL_ARTICLE', data: res.data })
     }).catch(err => {
-      dispatch({ type: 'ADD_ERROR', error: err.response.data });
       axiosRequestDebug(err);
+      
+      if (!err.response) console.log(err);
+
+      dispatch({ type: 'ADD_ERROR', error: err.response.data });
     })
   }
 }
+
+export const deleteArticle = (adminId, articleId, coverId) => {
+  return dispatch => {
+    client.post(`${baseUrl}/${adminId}/articles/${articleId}/delete`, {cover_id: coverId}).then(res => {
+      dispatch({ type: 'ADMIN_DELETE_ARTICLE', data: res.data })
+    }).catch(err => {
+      axiosRequestDebug(err);
+      dispatch({ type: 'ADD_ERROR', error: err.response.data });
+    })
+  };
+};

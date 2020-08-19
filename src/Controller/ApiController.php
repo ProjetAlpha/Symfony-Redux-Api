@@ -169,13 +169,6 @@ class ApiController extends AbstractController
         }
 
         $userId = $user->getId();
-        $formatBase64 = preg_replace('#^data:image/[^;]+;base64,#', '', $imageData);
-        $bin = base64_decode($formatBase64);
-        $im = imagecreatefromstring($bin);
-
-        if (!$im) {
-            throw new ServiceUnavailableHttpException('Image format internal error.');
-        }
 
         $userDirectory = $this->getParameter('upload_image_dir').$userId;
 
@@ -185,8 +178,10 @@ class ApiController extends AbstractController
 
         $destination = $userDirectory.'/'.$name.'-'.uniqid().'.'.$extension;
 
-        imagepng($im, $destination, 0);
-        imagedestroy($im);
+        $file = fopen($destination, "wb");
+        $data = explode(',', $imageData);
+        fwrite($file, base64_decode($data[1] ?? $imageData));
+        fclose($file);
 
         $imageModel = new Image();
         $imageModel->setPath($destination);
@@ -323,5 +318,43 @@ class ApiController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse($deletedImage, Response::HTTP_OK);
+    }
+
+    /**
+     * @Route("/api/image/private/{id}", name="get_image")
+     */
+    public function privateImage(Request $request)
+    {
+        $id = $request->attributes->get('id');
+        $apiToken = $request->headers->get('X-API-TOKEN');
+
+        if (!$id || !is_numeric($id)) {
+            throw new BadRequestHttpException('Bad request input.');
+        }
+
+        $user = $this->entityManager
+        ->getRepository(User::class)
+        ->findOneBy(['apiToken' => $apiToken]);
+
+        if (!$user) {
+            throw new NotFoundHttpException('Unexpected user.');
+        }
+
+        $image = $this->entityManager
+        ->getRepository(Image::class)
+        ->findOneBy(['id' => $id]);
+
+        if (!$image) {
+            throw new NotFoundHttpException('Unexpected image id.');
+        }
+
+        if (!file_exists($image->getPath())) {
+            throw new NotFoundHttpException('Unexpected image file id.');
+        }
+
+        $imgData = base64_encode(file_get_contents($image->getPath()));
+        $src = 'data: '.mime_content_type($image->getPath()).';base64,'.$imgData;
+
+        return new JsonResponse(['image' => $src, 'path' => $image->getPath()], Response::HTTP_OK);
     }
 }

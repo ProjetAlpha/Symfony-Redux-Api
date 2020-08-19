@@ -34,7 +34,7 @@ client.interceptors.response.use(response => response, error => {
   if (error.response && (error.response.status === 401 || error.response.status === 403)) {
     if (error.response.status === 401) {
       if (error.response.data && error.response.data.refresh_token) {
-        client.get(`/public/token/refresh/${error.response.data.refresh_token}`)
+        return client.get(`/public/token/refresh/${error.response.data.refresh_token}`)
               .then(res => {
                 Auth.setAuthToken(client, res.data.token);
                 Auth.updateUser('token', res.data.token);

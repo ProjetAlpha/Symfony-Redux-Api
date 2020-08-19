@@ -25,14 +25,21 @@ drawerContent[Constant.ADMIN].push({
 
 drawerContent[Constant.ADMIN].push({
     type: Constant.ADMIN,
-    icon: <UI.CreateIcon></UI.CreateIcon>,
-    primary: 'Articles',
-    route: '/articles'
+    icon: <UI.DraftsIcon></UI.DraftsIcon>,
+    primary: 'Drafts',
+    route: '/articles/drafts'
 });
 
 drawerContent[Constant.ADMIN].push({
     type: Constant.ADMIN,
-    icon: <UI.AddCircleIcon></UI.AddCircleIcon>,
+    icon: <UI.PublishIcon></UI.PublishIcon>,
+    primary: 'Published',
+    route: '/articles/release'
+});
+
+drawerContent[Constant.ADMIN].push({
+    type: Constant.ADMIN,
+    icon: <UI.CreateIcon></UI.CreateIcon>,
     primary: 'New article',
     route: '/articles/new'
 })
@@ -48,7 +55,7 @@ drawerContent[Constant.ANONYMOUS].push({
     type: Constant.ANONYMOUS,
     icon: <UI.HomeIcon></UI.HomeIcon>,
     primary: 'Home',
-    route: '/'
+    route: Auth.isAdmin() ? '/articles/release' : '/'
 })
 
 class Drawer extends React.Component {
