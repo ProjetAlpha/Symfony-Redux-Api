@@ -15,7 +15,32 @@ class TopAppBar extends React.Component {
 
   state = {
     mobileOpen: false,
-    desktopOpen: window.innerWidth >= 600 ? true : false
+    desktopOpen: window.innerWidth >= 960 ? true : false
+  }
+
+  handleResize() {
+    let root = document.documentElement;
+    if (window.innerWidth < 960 && this.state.desktopOpen) {
+      this.setState({
+        desktopOpen: false
+      });
+      root.style.setProperty('--barpad', 0);
+    }
+
+    if (window.innerWidth >= 960 && !this.state.desktopOpen) {
+      this.setState({
+        desktopOpen: true
+      });
+      root.style.setProperty('--barpad', '240px');
+    }
+  }
+
+  componentDidMount() {
+    window.addEventListener('resize', this.handleResize.bind(this));
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize.bind(this));
   }
 
   handleLogout() {
@@ -26,11 +51,11 @@ class TopAppBar extends React.Component {
   handleDrawerToggle() {
     // weird bug fix with material-ui hidden component.
     this.setState(prevState => ({
-      mobileOpen: window.innerWidth >= 600 ? false : !prevState.mobileOpen,
-      desktopOpen: window.innerWidth >= 600 ? !prevState.desktopOpen : false
+      mobileOpen: window.innerWidth >= 960 ? false : !prevState.mobileOpen,
+      desktopOpen: window.innerWidth >= 960 ? !prevState.desktopOpen : false
     }));
 
-    if (window.innerWidth >= 600) {
+    if (window.innerWidth >= 960) {
       let root = document.documentElement;
       root.style.setProperty('--barpad', !this.state.desktopOpen ? '240px' : 0);
     }
@@ -60,33 +85,24 @@ class TopAppBar extends React.Component {
             <UI.IconButton edge="start" className={clsx(classes.menuButton, (this.state.desktopOpen || this.state.mobileOpen) && classes.hide)} color="inherit" aria-label="menu" onClick={this.handleDrawerToggle.bind(this)}>
               <UI.MenuIcon />
             </UI.IconButton>
-            { /*<UI.Typography variant="h6" className={classes.title}>
-              <Link className={classes.link} to="/">Home</Link>
-              </UI.Typography>*/
-            }
-
             <div className={classes.rightSideContainer}>
               {
                 !Auth.isLogin() && <Link to="/register"><UI.Button className={classes.buttonGreen}> Register </UI.Button></Link>
               }
-
               {
                 !Auth.isLogin() && <Link to="/"><UI.Button className={classes.buttonBlue}> Login </UI.Button></Link>
               }
-
               {
                 Auth.isLogin() && this.props.user
                 && <Link to="/profil">
                   <UI.Button className={classes.buttonGreen}> {this.props.user.firstname} </UI.Button>
                 </Link>
               }
-
               {
                 Auth.isLogin() && <Link to="/" onClick={() => this.handleLogout()}>
                   <UI.Button className={classes.buttonBlue}> Logout </UI.Button>
                 </Link>
               }
-
               {
                 /*<UI.IconButton
                   edge="end"

@@ -20,6 +20,7 @@ import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Divider from '@material-ui/core/Divider';
 import DeleteIcon from '@material-ui/icons/Delete';
+import CreateIcon from '@material-ui/icons/Create';
 import Icon from '@material-ui/core/Icon';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
@@ -52,5 +53,6 @@ export {
     DeleteIcon,
     Snackbar,
     MuiAlert,
-    CircularProgress
+    CircularProgress,
+    CreateIcon
  };

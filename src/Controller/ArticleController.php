@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Article;
 use App\Entity\User;
+use App\Entity\Image;
 use App\Services\Normalize;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -45,6 +46,7 @@ class ArticleController extends AbstractController
     {
         $userId = $request->attributes->get('admin_id');
         $isDraft = $request->request->get('is_draft');
+        $apiToken = $request->headers->get('X-API-TOKEN');
 
         if (!$userId || !is_numeric($userId)) {
             throw new NotFoundHttpException('Unexpected article id.');
@@ -52,7 +54,7 @@ class ArticleController extends AbstractController
 
         $user = $this->entityManager
         ->getRepository(User::class)
-        ->findOneBy(['id' => $userId]);
+        ->findOneBy(['apiToken' => $apiToken]);
 
         if (!$user) {
             throw new NotFoundHttpException('Unexpected admin user.');
@@ -157,6 +159,8 @@ class ArticleController extends AbstractController
      */
     public function create(Request $request)
     {
+        $apiToken = $request->headers->get('X-API-TOKEN');
+
         $userId = $request->attributes->get('admin_id');
         $isDraft = $request->request->get('is_draft');
         $data = $request->request->get('raw_data');
@@ -170,7 +174,7 @@ class ArticleController extends AbstractController
 
         $user = $this->entityManager
         ->getRepository(User::class)
-        ->findOneBy(['id' => $userId]);
+        ->findOneBy(['apiToken' => $apiToken]);
 
         if (!$user) {
             throw new NotFoundHttpException('Unexpected admin post request.');
@@ -194,6 +198,8 @@ class ArticleController extends AbstractController
      */
     public function update(Request $request)
     {
+        $apiToken = $request->headers->get('X-API-TOKEN');
+
         $userId = $request->attributes->get('admin_id');
         $articleId = $request->attributes->get('article_id');
 
@@ -209,7 +215,7 @@ class ArticleController extends AbstractController
 
         $user = $this->entityManager
         ->getRepository(User::class)
-        ->findOneBy(['id' => $userId]);
+        ->findOneBy(['apiToken' => $apiToken]);
 
         if (!$user) {
             throw new NotFoundHttpException('Unexpected admin post request.');
@@ -218,6 +224,10 @@ class ArticleController extends AbstractController
         $article = $this->entityManager
         ->getRepository(Article::class)
         ->findOneBy(['id' => $articleId]);
+
+        if (!$article) {
+            throw new NotFoundHttpException('Unexpected admin post request.');
+        }
 
         $article->setRawData($rawData);
         $article->setTitle($title);
@@ -236,7 +246,9 @@ class ArticleController extends AbstractController
     public function delete(Request $request)
     {
         $userId = $request->attributes->get('admin_id');
-        $articleId = $request->attributes->get('article_id');
+        $coverId = $request->request->get('cover_id');
+        $articleId = (int)$request->attributes->get('article_id');
+        $apiToken = $request->headers->get('X-API-TOKEN');
 
         if (!$userId || !$articleId) {
             throw new NotFoundHttpException('Unexpected admin article delete.');
@@ -244,7 +256,7 @@ class ArticleController extends AbstractController
 
         $user = $this->entityManager
         ->getRepository(User::class)
-        ->findOneBy(['id' => $userId]);
+        ->findOneBy(['apiToken' => $apiToken]);
 
         if (!$user) {
             throw new NotFoundHttpException('Unexpected admin post request.');
@@ -254,8 +266,26 @@ class ArticleController extends AbstractController
         ->getRepository(Article::class)
         ->findOneBy(['id' => $articleId]);
 
+        if (!$article) {
+            throw new NotFoundHttpException('Unexpected article id request.');
+        }
+
         $this->entityManager->remove($article);
         $this->entityManager->flush();
+
+        if ($coverId) {
+            $image = $this->entityManager
+            ->getRepository(Image::class)
+            ->findOneBy(['id' => $coverId]);
+
+            if ($image) {
+                if (file_exists($image->getPath())) {
+                    unlink($image->getPath());
+                }
+                $this->entityManager->remove($image);
+                $this->entityManager->flush();
+            }
+        }
 
         return new JsonResponse(['id' => $articleId], Response::HTTP_OK);
     }

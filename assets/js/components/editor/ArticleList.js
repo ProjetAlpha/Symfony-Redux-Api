@@ -1,39 +1,41 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import { withRouter } from 'react-router-dom';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import { convertToRaw, EditorState, AtomicBlockUtils, RichUtils, getDefaultKeyBinding, convertFromRaw, CompositeDecorator, Editor } from "draft-js";
+import { Link } from 'react-router-dom';
 
 import * as UI from '../../UI/Admin/base';
+import * as Auth from '../../utils/Authentification';
 import Pagination from '../main/Pagination';
 import AdminStyle from '../../UI/Admin/style';
-import { fetchAllArticle } from '../../actions/Admin';
+import { fetchAllArticle, deleteArticle } from '../../actions/Admin';
+import { fetchImage } from '../../actions/Image';
 import draftToHtml from 'draftjs-to-html';
 import Search from '../main/Search';
+import CustomDialog from '../main/CustomDialog';
+import PropTypes from 'prop-types';
 
 class ArticleList extends React.Component {
 
     state = {
         articles: [],
+        article: null,
         highlightArticles: [],
-        loading: true
+        loading: true,
+        isDraft: false,
+        images: [],
+        triggerDialog: false
     }
 
     componentDidMount() {
-        if (!this.props.articles) {
-            this.props.fetchAllArticle(this.props.user.id, {
-                is_draft: true
-            });
-        } else {
-            this.setState({
-                articles: this.props.articles,
-                loading: false
-            });
-        }
+        this.props.fetchAllArticle(this.props.user.id, {
+            is_draft: this.props.isDraft
+        });
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         if (nextProps.articles !== this.props.articles) {
-            console.log(nextProps.articles);
             this.setState({
                 articles: nextProps.articles,
                 loading: false
@@ -42,7 +44,6 @@ class ArticleList extends React.Component {
     }
 
     update(articles) {
-        console.log(articles);
         this.setState({
             articles: articles
         })
@@ -55,60 +56,39 @@ class ArticleList extends React.Component {
         })
     }
 
+    loadImage(id, index) {
+        if (!this.state.images[index] && id) {
+            fetchImage(id).then(res => {
+                let images = [...this.state.images];
+                images[index] = res.data.image;
 
-    // match strong, h, i and b tags - standard search
-    // match key word - advanced search
+                this.setState({
+                    images: images
+                });
+            });
+        }
+    }
+
+    getLink(to) {
+        return props => <Link to={to} {...props} />;
+    }
+
     findArticleMatch(search, article, articleIndex) {
-        // const tagsRegex = /(?:<strong>|<i>|<b>|<h\d+>)([^<]*)/gm; // filter by tags
-        const tagsRegex = /(<strong>|<i>|<b>|<h\d+>|<p>|<blockquote>)([^<]*)/gm; // key word
-        const matchs = article.raw_data.match(tagsRegex);
-        //console.log(matchs);
-        let startIndex = 0;
-        const target = matchs.find(match => {
-            const state = match.toLowerCase().indexOf(search);
-            if (-1 !== state)
-                startIndex+= match.length;
-            return -1 !== state;
-        });
-        //console.log(startIndex);
-        //console.log(target);
-        // tags[1]
-        const tags = tagsRegex.exec(article.raw_data);
-        console.log(tags);
-        if (!tags) return false;
+        return -1 !== article.title.toLowerCase().indexOf(search) || -1 !== article.description.toLowerCase().indexOf(search);
+    }
 
-        const match = tags[1].replace(/\s\s+/g, ' ').trim();
-        const withoutNewLines = match.replace(/&nbsp;/g, '');
-        const index = withoutNewLines.toLowerCase().indexOf(search);
-        if (-1 == index) return false;
+    handleDelete(article) {
+        this.props.deleteArticle(this.props.user.id, article.id, article.cover_id);
+    }
 
-        //console.log(tags);
-
-        const text = tags[1].replace(/&nbsp;/g, '');
-        const start = tags[0].indexOf(text) + tags.index;
-        const end = start + text.length;
-
-        const innerSearch = article.raw_data.slice(start, end);
-        const searchStart = innerSearch.indexOf(search);
-
-        let i = searchStart;
-        let j = 0;
-        while (i < innerSearch.length && j < search.length && innerSearch[i++] == search[j++])
-            ;
-
-        const articleHighlight = article.raw_data.slice(0, start + searchStart)
-                                + '<span class="hightlight-search">'
-                                + article.raw_data.slice(start + searchStart, start + searchStart + j)
-                                + '</span>'
-                                + article.raw_data.slice(start + searchStart + j, article.raw_data.length);
-
-        this.setState((prevState) => ({
-            highlightArticles: [...prevState.highlightArticles, articleHighlight]
+    handleDialog() {
+        this.setState(prevState => ({
+            triggerDialog: !prevState.triggerDialog
         }))
-        //console.log(articleHighlight);
-        return true;
-        // const styleRegex = /<.+?style=\s*\"\s*(\S*)\s*\"\s*>([^<]*)/gm;
-        // const style = styleRegex.exec(article.raw_data);
+    }
+
+    naviguate(url) {
+        this.props.history.push(url);
     }
 
     render() {
@@ -129,25 +109,69 @@ class ArticleList extends React.Component {
                     {this.state.articles && <Pagination baseUrl={'/articles'} maxItem={5} data={this.state.articles} render={
                         (article, index, position) => (
                             <div key={index}>
+                                { /* <div dangerouslySetInnerHTML={{ __html: this.state.highlightArticles[position] || article.raw_data }}></div> */}
                                 <UI.ListItem key={index}>
-
-                                    { /*this.state.editors[position] &&
-                                            <Editor editorState={this.state.editors[position]}
-                                                onChange={this.onChange} readOnly/>*/
-                                    }
-                                    <div dangerouslySetInnerHTML={{ __html: this.state.highlightArticles[position] || article.raw_data }}></div>
-
+                                    <UI.Grid container spacing={2}>
+                                        {article.cover_id &&
+                                            <UI.Grid item sm={3} xs={12} component={Link} to={"#"}
+                                                onClick={() => this.props.history.push(`/articles/${article.id}/view`)}>
+                                                {
+                                                    this.loadImage(article.cover_id, position)
+                                                }
+                                                {
+                                                    this.state.images[position] && <img className={classes.img} alt="complex" src={this.state.images[position]} />
+                                                }
+                                            </UI.Grid>
+                                        }
+                                        <UI.Grid item sm={8} md={8} xs={12} sm container>
+                                            <UI.Grid item xs container direction="column" component={Link} to={"#"}
+                                                onClick={() => this.props.history.push(`/articles/${article.id}/view`)}>
+                                                <UI.Grid item xs>
+                                                    <UI.Typography gutterBottom variant="h4">
+                                                        {article.title}
+                                                    </UI.Typography>
+                                                    <UI.Typography variant="body1" color="textSecondary">
+                                                        {article.description}
+                                                    </UI.Typography>
+                                                </UI.Grid>
+                                            </UI.Grid >
+                                            {Auth.isAdmin() && <UI.Grid m={2} item container spacing={2} direction="row" align="flex-end">
+                                                <UI.Grid item>
+                                                    <UI.Button size="medium" variant="contained" color="primary" startIcon={<UI.CreateIcon />}>
+                                                        Edit
+                                                    </UI.Button>
+                                                </UI.Grid>
+                                                <UI.Grid item>
+                                                    <UI.Button size="medium" variant="contained" color="secondary" startIcon={<UI.DeleteIcon />}
+                                                        onClick={() => this.setState({ article: article, triggerDialog: true })}>
+                                                        Delete
+                                                    </UI.Button>
+                                                </UI.Grid>
+                                            </UI.Grid>}
+                                        </UI.Grid>
+                                    </UI.Grid>
                                 </UI.ListItem>
-                                <UI.Divider component="li" />
+                                {
+                                    <UI.Divider component="li" />
+                                }
                             </div>
                         )
                     }
                     />
                     }
                 </UI.List>
+                <CustomDialog open={this.state.triggerDialog ? true : false}
+                    onConfirmation={this.handleDelete.bind(this, this.state.article)}
+                    onClose={this.handleDialog.bind(this)}
+                    text={'Are you sure you want to delete this article ?'}
+                />
             </div>
         );
     }
+}
+
+ArticleList.propTypes = {
+    isDraft: PropTypes.bool.isRequired
 }
 
 const mapStateToProps = state => {
@@ -161,4 +185,6 @@ const mapStateToProps = state => {
 
 const style = withStyles(AdminStyle)(ArticleList);
 
-export default connect(mapStateToProps, { fetchAllArticle })(style);
+const router = withRouter(style);
+
+export default connect(mapStateToProps, { fetchAllArticle, fetchImage, deleteArticle })(router);

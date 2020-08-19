@@ -4,7 +4,10 @@ export default theme => ({
     root: {
         //display: 'flex',
         //justifyContent:'center',
-        margin: theme.spacing(2),
+        marginLeft: '4%',
+        marginRight: '4%',
+        marginTop: '2%',
+        marginBottom: '3%',
         backgroundColor: theme.palette.background.paper,
     },
     toolbar: theme.mixins.toolbar,
@@ -33,5 +36,18 @@ export default theme => ({
         },
         marginBottom:theme.spacing(1),
         justifyContent:'center!important'
+    },
+    img: {
+        width: '100%',
+        height: 'auto'
+    },
+    imgContainer: {
+        textAlign: 'center',
+        display: 'flex',
+        justifyContent: 'space-around',
+        alignItems: 'center'
+    },
+    header: {
+        marginBottom: theme.spacing(3)
     }
 })

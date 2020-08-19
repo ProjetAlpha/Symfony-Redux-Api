@@ -42,7 +42,7 @@ class CustomDialog extends React.Component {
                     <UI.DialogTitle id="responsive-dialog-title">{"Delete this user ?"}</UI.DialogTitle>
                     <UI.DialogContent>
                         <UI.DialogContentText>
-                            Are you sure to delete this user ? - {this.props.text}
+                            {this.props.text}
                         </UI.DialogContentText>
                     </UI.DialogContent>
                     <UI.DialogActions>

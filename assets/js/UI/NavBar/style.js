@@ -37,7 +37,6 @@ export default theme => ({
     menuButton: {
       marginRight: theme.spacing(2)
     },
-    toolbar: theme.mixins.toolbar,
     title: {
       flexGrow: 1,
     },
@@ -53,6 +52,12 @@ export default theme => ({
     },
     drawerContainer: {
       width : '100%',
+    },
+    drawerHeader: {
+      width: '100%',
+      display: 'flex',
+      marginTop: '12px',
+      justifyContent: 'flex-end'
     },
     rightSideContainer: {
       marginLeft:'auto'

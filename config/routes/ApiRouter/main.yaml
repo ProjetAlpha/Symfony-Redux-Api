@@ -22,3 +22,8 @@ delete_image:
   path: /api/image/delete
   controller: App\Controller\ApiController::deleteImage
   methods: DELETE
+
+private_image:
+  path: /api/image/private/{id}
+  controller: App\Controller\ApiController::privateImage
+  methods: GET
