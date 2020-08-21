@@ -11,7 +11,6 @@ import Pagination from '../main/Pagination';
 import AdminStyle from '../../UI/Admin/style';
 import { fetchAllArticle, deleteArticle } from '../../actions/Admin';
 import { fetchImage } from '../../actions/Image';
-import draftToHtml from 'draftjs-to-html';
 import Search from '../main/Search';
 import CustomDialog from '../main/CustomDialog';
 import PropTypes from 'prop-types';
@@ -25,6 +24,7 @@ class ArticleList extends React.Component {
         loading: true,
         isDraft: false,
         images: [],
+        loadingImages: [],
         triggerDialog: false
     }
 
@@ -57,13 +57,25 @@ class ArticleList extends React.Component {
     }
 
     loadImage(id, index) {
-        if (!this.state.images[index] && id) {
+        if (!id || this.state.images[id]) return;
+
+        const isImageLoading = this.state.loadingImages.find(images => images.id == id);
+
+        if (!isImageLoading) {
+            this.setState(prevState => ({
+                loadingImages: [...prevState.loadingImages, {
+                    id: id
+                }]
+            }));
+
             fetchImage(id).then(res => {
+                if (!res || !res.data) return;
+
                 let images = [...this.state.images];
-                images[index] = res.data.image;
+                images[id] = res.data.image;
 
                 this.setState({
-                    images: images
+                    images: images,
                 });
             });
         }
@@ -79,12 +91,9 @@ class ArticleList extends React.Component {
 
     handleDelete(article) {
         this.props.deleteArticle(this.props.user.id, article.id, article.cover_id);
-    }
-
-    handleDialog() {
-        this.setState(prevState => ({
-            triggerDialog: !prevState.triggerDialog
-        }))
+        this.setState({
+            triggerDialog: false
+        })
     }
 
     naviguate(url) {
@@ -100,7 +109,7 @@ class ArticleList extends React.Component {
                     <UI.ListItem className={classes.searchItem}>
                         <Search
                             filterData={(search, article, index) => this.findArticleMatch(search, article, index)}
-                            data={Array.isArray(this.state.articles) ? this.state.articles : []}
+                            data={this.state.articles}
                             update={(articles) => this.update(articles)}
                             reset={(articles) => this.reset(articles)}
                             isLoading={this.state.loading}
@@ -108,21 +117,34 @@ class ArticleList extends React.Component {
                     </UI.ListItem>
                     {this.state.articles && <Pagination baseUrl={'/articles'} maxItem={5} data={this.state.articles} render={
                         (article, index, position) => (
-                            <div key={index}>
+                            <div key={position}>
                                 { /* <div dangerouslySetInnerHTML={{ __html: this.state.highlightArticles[position] || article.raw_data }}></div> */}
-                                <UI.ListItem key={index}>
-                                    <UI.Grid container spacing={2}>
-                                        {article.cover_id &&
-                                            <UI.Grid item sm={3} xs={12} component={Link} to={"#"}
-                                                onClick={() => this.props.history.push(`/articles/${article.id}/view`)}>
-                                                {
-                                                    this.loadImage(article.cover_id, position)
-                                                }
-                                                {
-                                                    this.state.images[position] && <img className={classes.img} alt="complex" src={this.state.images[position]} />
-                                                }
-                                            </UI.Grid>
-                                        }
+                                <UI.ListItem>
+                                    <UI.Grid container sm spacing={2}>
+                                        <UI.Grid item xs={12} md={3} sm={3} component={Link} to={"#"}
+                                            onClick={() => this.props.history.push(`/articles/${article.id}/view`)}>
+                                            {
+                                                article.cover_id &&
+                                                this.loadImage(article.cover_id, position)
+                                            }
+                                            {
+                                                this.state.images[article.cover_id]
+                                                && <img className={classes.img} alt="complex" src={this.state.images[article.cover_id]} />
+                                            }
+                                            {
+                                                !this.state.images[article.cover_id] && article.cover_id
+                                                && <div className={classes.circularContainer} variant="outlined" >
+                                                    <UI.CircularProgress />
+                                                </div>
+                                            }
+                                            {
+                                                !article.cover_id && 
+                                                <UI.Paper className={classes.circularContainer}>
+                                                    <UI.VisibilityOffIcon>
+                                                    </UI.VisibilityOffIcon>
+                                                </UI.Paper>
+                                            }
+                                        </UI.Grid>
                                         <UI.Grid item sm={8} md={8} xs={12} sm container>
                                             <UI.Grid item xs container direction="column" component={Link} to={"#"}
                                                 onClick={() => this.props.history.push(`/articles/${article.id}/view`)}>
@@ -135,20 +157,19 @@ class ArticleList extends React.Component {
                                                     </UI.Typography>
                                                 </UI.Grid>
                                             </UI.Grid >
-                                            {Auth.isAdmin() && <UI.Grid m={2} item container spacing={2} direction="row" align="flex-end">
-                                                <UI.Grid item>
-                                                    <UI.Button size="medium" variant="contained" color="primary" startIcon={<UI.CreateIcon />}>
-                                                        Edit
-                                                    </UI.Button>
-                                                </UI.Grid>
-                                                <UI.Grid item>
-                                                    <UI.Button size="medium" variant="contained" color="secondary" startIcon={<UI.DeleteIcon />}
-                                                        onClick={() => this.setState({ article: article, triggerDialog: true })}>
-                                                        Delete
-                                                    </UI.Button>
-                                                </UI.Grid>
-                                            </UI.Grid>}
                                         </UI.Grid>
+                                        {Auth.isAdmin() && <UI.Grid item className={classes.mobile_row}>
+                                            <UI.Grid item>
+                                                <UI.IconButton onClick={() => this.props.history.push(`/articles/${article.id}/edit`)}>
+                                                    <UI.CreateIcon color="primary" />
+                                                </UI.IconButton>
+                                            </UI.Grid>
+                                            <UI.Grid item>
+                                                <UI.IconButton onClick={() => this.setState({ article: article, triggerDialog: true })}>
+                                                    <UI.DeleteIcon color="secondary" />
+                                                </UI.IconButton>
+                                            </UI.Grid>
+                                        </UI.Grid>}
                                     </UI.Grid>
                                 </UI.ListItem>
                                 {
@@ -162,7 +183,7 @@ class ArticleList extends React.Component {
                 </UI.List>
                 <CustomDialog open={this.state.triggerDialog ? true : false}
                     onConfirmation={this.handleDelete.bind(this, this.state.article)}
-                    onClose={this.handleDialog.bind(this)}
+                    onClose={() => this.setState({ triggerDialog: false })}
                     text={'Are you sure you want to delete this article ?'}
                 />
             </div>

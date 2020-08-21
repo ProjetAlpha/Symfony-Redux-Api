@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { makeStyles, withStyles } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 
 import * as UI from '../../UI/Admin/base';
 import * as Auth from '../../utils/Authentification';
@@ -9,7 +10,6 @@ import AdminStyle from '../../UI/Admin/style';
 import { fetchArticle, deleteArticle } from '../../actions/Admin';
 import { fetchImage } from '../../actions/Image';
 import CustomDialog from '../main/CustomDialog';
-import PropTypes from 'prop-types';
 
 class Article extends React.Component {
 
@@ -70,7 +70,8 @@ class Article extends React.Component {
     }
 
     render() {
-        const { article, classes } = this.props;
+        const { classes } = this.props;
+        const article = this.state.article;
 
         return (
             <div className={classes.root}>
@@ -88,16 +89,16 @@ class Article extends React.Component {
                                 </UI.Grid>
                                 }
                             </div>
-                            {Auth.isAdmin() && <UI.Grid container spacing={6} direction="row" justify="center">
+                            {Auth.isAdmin() && <UI.Grid sm container direction="row" justify="flex-end">
                                 <UI.Grid item>
-                                    <UI.Button size="medium" variant="contained" color="primary" startIcon={<UI.CreateIcon />}>
-                                        Edit
-                                </UI.Button>
+                                    <UI.IconButton onClick={() => this.props.history.push(`/articles/${article.id}/edit`)}>
+                                        <UI.CreateIcon color="primary" />
+                                    </UI.IconButton>
                                 </UI.Grid>
                                 <UI.Grid item>
-                                    <UI.Button size="medium" variant="contained" color="secondary" startIcon={<UI.DeleteIcon />} onClick={() => this.setState({ triggerDialog: true })}>
-                                        Delete
-                                    </UI.Button>
+                                    <UI.IconButton onClick={() => this.setState({ article: article, triggerDialog: true })}>
+                                        <UI.DeleteIcon color="secondary" />
+                                    </UI.IconButton>
                                 </UI.Grid>
                             </UI.Grid>}
                             <UI.Grid item sm container direction="row">
@@ -139,4 +140,6 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(mapStateToProps, { fetchArticle, fetchImage, deleteArticle })(style);
+const route = withRouter(style);
+
+export default connect(mapStateToProps, { fetchArticle, fetchImage, deleteArticle })(route);

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from "react-redux";
 
+import { withRouter } from 'react-router-dom';
 import * as Constant from './Constant';
 import * as Auth from '../../utils/Authentification';
 import * as UI from '../../UI/NavBar/base';
@@ -70,7 +71,7 @@ class Drawer extends React.Component {
             && this.props.drawerContent[type]
             && this.props.drawerContent[type].map((data, index) => (
                 <Link to={data.route} key={index}>
-                    <UI.ListItem button>
+                    <UI.ListItem button selected={this.props.location.pathname == data.route && data.primary !== 'Home'}>
                         <UI.ListItemIcon>
                             {data.icon}
                         </UI.ListItemIcon>
@@ -126,4 +127,6 @@ const AppBarTheme = withTheme(Drawer);
 
 const AppBarStyle = withStyles(NavBarStyle)(AppBarTheme);
 
-export default connect(mapStateToProps, { setData, deleteData })(AppBarStyle);
+const route = withRouter(AppBarStyle);
+
+export default connect(mapStateToProps, { setData, deleteData })(route);
