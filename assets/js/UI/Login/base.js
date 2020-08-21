@@ -12,6 +12,7 @@ import Container from '@material-ui/core/Container';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import MailIcon from '@material-ui/icons/Mail';
 import { Alert, AlertTitle } from '@material-ui/lab';
+import Paper from '@material-ui/core/Paper';
 
 export {
     Alert,
@@ -28,5 +29,6 @@ export {
     LockOutlinedIcon,
     Typography,
     Container,
-    MailIcon
+    MailIcon,
+    Paper
  };

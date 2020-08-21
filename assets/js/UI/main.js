@@ -63,7 +63,8 @@ export const buttons = {
 export const body = theme => ({
     root: {
         display:'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        minHeight: '100%'
     },
     toolbar: theme.mixins.toolbar,
 })

@@ -15,7 +15,7 @@ class TopAppBar extends React.Component {
 
   state = {
     mobileOpen: false,
-    desktopOpen: window.innerWidth >= 960 ? true : false
+    desktopOpen: window.innerWidth >= 960 && (Auth.isLogin() || Auth.isAdmin()) ? true : false
   }
 
   handleResize() {
@@ -27,6 +27,8 @@ class TopAppBar extends React.Component {
       root.style.setProperty('--barpad', 0);
     }
 
+    if (!Auth.isLogin() || !Auth.isAdmin()) return ;
+
     if (window.innerWidth >= 960 && !this.state.desktopOpen) {
       this.setState({
         desktopOpen: true
@@ -36,6 +38,9 @@ class TopAppBar extends React.Component {
   }
 
   componentDidMount() {
+    if (!Auth.isLogin() || !Auth.isAdmin()) {
+      document.documentElement.style.setProperty('--barpad', 0);
+    }
     window.addEventListener('resize', this.handleResize.bind(this));
   }
 

@@ -44,74 +44,76 @@ class SignIn extends React.Component {
     const classes = this.props.classes;
 
     return (
-      <UI.Container component="main" maxWidth="xs">
-        <UI.CssBaseline />
-        <div className={classes.paper}>
-          <UI.Avatar className={classes.avatar}>
-            <UI.LockOutlinedIcon />
-          </UI.Avatar>
-          <UI.Typography component="h1" variant="h5">
-            Sign in
+      <UI.Paper elevation={3} className={classes.loginContainer}>
+        <UI.Container component="main" maxWidth="xs">
+          <UI.CssBaseline />
+          <div className={classes.paper}>
+            <UI.Avatar className={classes.avatar}>
+              <UI.LockOutlinedIcon />
+            </UI.Avatar>
+            <UI.Typography component="h1" variant="h5">
+              Sign in
           </UI.Typography>
-          <form className={classes.form} action="#" onSubmit={this.handleSubmit.bind(this)}>
-            <UI.TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-              onChange={this.handleChange('email').bind(this)}
-            />
-            <UI.TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              onChange={this.handleChange('password').bind(this)}
-            />
+            <form className={classes.form} action="#" onSubmit={this.handleSubmit.bind(this)}>
+              <UI.TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
+                autoFocus
+                onChange={this.handleChange('email').bind(this)}
+              />
+              <UI.TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="current-password"
+                onChange={this.handleChange('password').bind(this)}
+              />
 
-            {
-              getError(this.props) &&
-              <UI.Alert severity="error">
-                <UI.AlertTitle>Error</UI.AlertTitle>
-                {getError(this.props)}
-              </UI.Alert>
-            }
+              {
+                getError(this.props) &&
+                <UI.Alert severity="error">
+                  <UI.AlertTitle>Error</UI.AlertTitle>
+                  {getError(this.props)}
+                </UI.Alert>
+              }
 
-            <UI.Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              color="primary"
-              className={classes.submit}
-              onClick={this.handleSubmit.bind(this)}
-            >
-              Sign In
+              <UI.Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                color="primary"
+                className={classes.submit}
+                onClick={this.handleSubmit.bind(this)}
+              >
+                Sign In
             </UI.Button>
-            <UI.Grid container>
-              <UI.Grid item xs>
-                <Link to="/resetPassword" variant="body2">
-                  Forgot password?
+              <UI.Grid container>
+                <UI.Grid item xs>
+                  <Link to="/resetPassword" variant="body2">
+                    Forgot password?
                 </Link>
+                </UI.Grid>
+                <UI.Grid item>
+                  <Link to={"/register"} variant="body2">
+                    {"Don't have an account? Sign Up"}
+                  </Link>
+                </UI.Grid>
               </UI.Grid>
-              <UI.Grid item>
-                <Link to={"/register"} variant="body2">
-                  {"Don't have an account? Sign Up"}
-                </Link>
-              </UI.Grid>
-            </UI.Grid>
-          </form>
-        </div>
-      </UI.Container>
+            </form>
+          </div>
+        </UI.Container>
+      </UI.Paper>
     );
   }
 }
