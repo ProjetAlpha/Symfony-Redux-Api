@@ -883,7 +883,7 @@
     padding: 12px;
     border-radius: 2px;
     background:#FFFF;
-    min-height: 200px;
+    min-height: 50vh;
   }
   .rdw-storybook-toolbar {
     top: -130px;

@@ -1,9 +1,21 @@
 export default theme => ({
     paper: {
-      marginTop: theme.spacing(8),
+      //marginTop: theme.spacing(8),
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
+    },
+    loginContainer: {
+      display: 'flex',
+      justifyContent:'center',
+      alignItems:'center',
+      /* haut | droit | bas | gauche */
+      margin: '15px auto 0 auto',
+      height:'87vh',
+      [theme.breakpoints.down('xs')]: {
+        height:'100vh',
+        margin:0
+      },
     },
     center: {
       display: 'flex',

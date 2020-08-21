@@ -12,6 +12,7 @@ import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { Alert, AlertTitle } from '@material-ui/lab';
+import Paper from '@material-ui/core/Paper';
 
 export {
     AlertTitle,
@@ -28,6 +29,7 @@ export {
     Box,
     LockOutlinedIcon,
     Typography,
-    Container
+    Container,
+    Paper
 };
 
