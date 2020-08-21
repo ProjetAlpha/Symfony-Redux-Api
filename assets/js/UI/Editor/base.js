@@ -6,6 +6,8 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Grid from '@material-ui/core/Grid';
 import DeleteIcon from '@material-ui/icons/Delete';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import CreateIcon from '@material-ui/icons/Create';
 
 export {
     Button,
@@ -15,5 +17,7 @@ export {
     List,
     ListItem,
     Grid,
-    DeleteIcon
+    DeleteIcon,
+    InputAdornment,
+    CreateIcon
 }

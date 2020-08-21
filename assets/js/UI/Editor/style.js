@@ -38,7 +38,13 @@ export default theme => ({
         marginBottom:'12px',
         padding:'15px'
     },
-    mr_l_15: {
-        marginLeft: '15px'
+    mr_l_t_15_mobile: {
+        [theme.breakpoints.up('sm')]: {
+            marginLeft: '15px'
+        },
+
+        [theme.breakpoints.down('sm')]: {
+            marginTop: '15px'
+        }
     }
 });

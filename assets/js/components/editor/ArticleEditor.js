@@ -1,18 +1,16 @@
 import React, { Component } from 'react';
 import * as UI from '../../UI/Editor/base';
 import { connect } from "react-redux";
-import { Modifier, convertToRaw, EditorState, AtomicBlockUtils, RichUtils, getDefaultKeyBinding, convertFromRaw, KeyBindingUtil, ContentState } from "draft-js";
+import { convertToRaw, EditorState, RichUtils, convertFromRaw, KeyBindingUtil, ContentState } from "draft-js";
 import sanitizeHtml from 'sanitize-html';
 
-import CustomDialog from '../main/CustomDialog';
 import CustomSnackBar from '../main/CustomSnackBar';
 import draftToHtml from 'draftjs-to-html';
 import htmlToDraft from 'html-to-draftjs';
-import { getBlocksWhereEntityData } from './utils';
 import EditorStyle from '../../UI/Editor/style';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
 import { fetchArticle, updateArticle, createArticle } from '../../actions/Admin';
-import { uploadImage, deleteImage } from '../../actions/Image';
+import { uploadImage } from '../../actions/Image';
 import { reset } from '../../actions/Success';
 import { clearError } from '../../actions/Error';
 import { Editor } from 'react-draft-wysiwyg';
@@ -23,9 +21,9 @@ class ArticleEditor extends React.Component {
   state = {
     editorState: EditorState.createEmpty(),
     images: {},
+    isEditable: false,
     textUpdate: false,
     imageUpdate: false,
-    timeouts: [],
     image: {},
     title: '',
     description: '',
@@ -35,11 +33,33 @@ class ArticleEditor extends React.Component {
     feedback: false
   };
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
+  // remove new line on enter (make no sense, people are used to microsft word)
+  handleReturn = (event, editorState) => {
+    const isSoftNewLineEvent = !KeyBindingUtil.isSoftNewlineEvent(event);
+    if (isSoftNewLineEvent) {
+      const newEditorState = RichUtils.insertSoftNewline(editorState);
+      if (newEditorState) {
+        this.onChange(RichUtils.insertSoftNewline(editorState));
+      }
+      return 'handled';
+    }
 
+    return 'not-handled';
+  }
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.article && nextProps.article !== this.props.article) {
-      // ---> Edit Mode => this.loadArticleHtml(nextProps.article); load image & title & description
-      
+      if (this.state.isEditable) {
+        this.loadArticleHtml(nextProps.article);
+        this.setState({
+          isEditable: false
+        })
+      }
+
+      this.setState({
+        articleId: nextProps.article.id
+      })
+
       if (this.state.feedback) {
         this.setState({
           triggerSnack: true,
@@ -67,10 +87,8 @@ class ArticleEditor extends React.Component {
         // clear error and reset success.
         this.props.reset();
         this.props.clearError();
-        this.setState({ updated: false });
       } else {
-        // error handler
-        // this.props.history.push('/resetPassword');
+        // error handler here
       }
     }
   }
@@ -80,7 +98,6 @@ class ArticleEditor extends React.Component {
   }
 
   updateArticle(isDraft = false, feedback = false) {
-
     if (feedback) {
       this.setState({
         feedback: true
@@ -88,16 +105,11 @@ class ArticleEditor extends React.Component {
     }
 
     const contentState = this.state.editorState.getCurrentContent();
-
     if (!this.state.textUpdate && !this.state.imageUpdate && !feedback) return;
 
     this.setState({ textUpdate: false });
     const rawData = draftToHtml(convertToRaw(contentState));
-
-    let id = this.state.articleId;
-    if (!id) {
-      id = this.props.article ? this.props.article.id : false;
-    }
+    const id = this.state.articleId;
 
     if (id) {
       this.props.updateArticle(this.props.user.id, id, {
@@ -132,42 +144,26 @@ class ArticleEditor extends React.Component {
   };
 
   loadArticleHtml(article) {
-
     const blocksFromHtml = htmlToDraft(article.raw_data);
     const { contentBlocks, entityMap } = blocksFromHtml;
     const contentState = ContentState.createFromBlockArray(contentBlocks, entityMap);
     const editorState = EditorState.createWithContent(contentState);
 
-    // set header : description - title - image
-    // fetchImage.
     this.setState({
       editorState: editorState
     });
   }
 
   componentDidMount() {
-    const { articleId, isDraft } = this.props.match.params;
+    const { articleId } = this.props.match.params;
 
     if (articleId) {
+      this.setState({
+        articleId: articleId,
+        isEditable: true
+      });
+
       this.props.fetchArticle(this.props.user.id, articleId);
-    }
-
-    this.setState({
-      isDraft: isDraft,
-      articleId: articleId
-    });
-
-    document.addEventListener("keydown", this.onKeyPressed.bind(this));
-  }
-
-  componentWillUnmount() {
-    this.state.timeouts.forEach(timeout => clearInterval(timeout));
-    document.removeEventListener("keydown", this.onKeyPressed.bind(this));
-  }
-
-  onKeyPressed(e) {
-    if (event.keyCode === 9) {
-      event.preventDefault();
     }
   }
 
@@ -187,7 +183,7 @@ class ArticleEditor extends React.Component {
 
   handleSnackBar() {
     this.setState(prevState => ({
-        triggerSnack: !prevState.triggerSnack
+      triggerSnack: !prevState.triggerSnack
     }))
   }
 
@@ -209,6 +205,7 @@ class ArticleEditor extends React.Component {
           <ArticleHeader onImageUpdate={this.handleHeaderImage.bind(this)} onInfoUpdate={this.handleHeaderInfo.bind(this)} />
           <div>
             <Editor
+              handleReturn={this.handleReturn}
               editorState={this.state.editorState}
               toolbarClassName="rdw-storybook-toolbar"
               wrapperClassName="rdw-storybook-wrapper"
@@ -221,16 +218,16 @@ class ArticleEditor extends React.Component {
             <UI.Button variant="contained" variant="outlined" color="primary" component="span" onClick={this.updateArticle.bind(this, false, true)}>
               Publish article
           </UI.Button>
-            <UI.Button className={classes.mr_l_15} variant="contained" variant="outlined" color="secondary" onClick={this.updateArticle.bind(this, true, true)}>
+            <UI.Button className={classes.mr_l_t_15_mobile} variant="contained" variant="outlined" color="secondary" onClick={this.updateArticle.bind(this, true, true)}>
               Save to drafts
           </UI.Button>
-          <CustomSnackBar
+            <CustomSnackBar
               open={this.state.triggerSnack ? true : false}
               time={3500}
               position={{ vertical: 'bottom', horizontal: 'right' }}
               message={{ error: 'An error occured during article upload', success: 'Successfully saved article' }}
               onClose={this.handleSnackBar.bind(this)}
-          />
+            />
           </div>
         </div>
       </UI.Container>
@@ -251,4 +248,3 @@ const mapStateToProps = state => {
 const editorStyle = withStyles(EditorStyle)(ArticleEditor);
 
 export default connect(mapStateToProps, { fetchArticle, updateArticle, uploadImage, createArticle, reset, clearError })(editorStyle);
-

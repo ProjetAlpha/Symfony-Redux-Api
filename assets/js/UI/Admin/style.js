@@ -37,9 +37,17 @@ export default theme => ({
         marginBottom:theme.spacing(1),
         justifyContent:'center!important'
     },
+    mobile_row: {
+        [theme.breakpoints.down('md')]: {
+            display:'flex',
+            flexDirection: 'row'
+        }
+    },
     img: {
-        width: '100%',
-        height: 'auto'
+        //width: '100%',
+        //height: 'auto',
+        maxWidth: '100%',
+        maxHeight: '190px'
     },
     imgContainer: {
         textAlign: 'center',
@@ -49,5 +57,16 @@ export default theme => ({
     },
     header: {
         marginBottom: theme.spacing(3)
+    },
+    circularContainer: {
+        display:'flex',
+        alignItems:'center',
+        justifyContent:'center',
+        height:'100%'
+    },
+    paper: {
+        width: 'auto',
+        minHeight: '100px',
+        maxHeight: '190px'
     }
 })

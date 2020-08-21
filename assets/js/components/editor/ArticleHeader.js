@@ -4,48 +4,26 @@ import { connect } from "react-redux";
 import MediaCapture from "../medias/MediaCapture";
 import EditorStyle from '../../UI/Editor/style';
 import PropTypes from 'prop-types';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
 import { fetchArticle, updateArticle, createArticle } from '../../actions/Admin';
 
-// post title, description and image
 class ArticleHeader extends React.Component {
 
     state = {
         description: '',
         title: '',
-        image: ''
-    }
-
-    componentDidMount() {
-        if (this.props.description) {
-            this.setState({
-                description: this.props.description
-            })
-        }
-
-        if (this.props.title) {
-            this.setState({
-                title: this.props.title
-            })
-        }
-
-        if (this.props.image) {
-            this.setState({
-                image: this.props.image
-            })
-        }
+        imageId: null
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        // editor component has been updated - post title, description, image
-        if (nextProps.articles !== this.props.articles) {
-
-            // this.props.updateArticle(this.props.user.id, articleId || this.props.articles.id, {
-            // raw_data: rawData,
-            // is_draft: !isDraft ? true : false,
-            // description,
-            // title
-            // });
+        if (nextProps.article !== this.props.article) {
+            this.setState({
+                description: nextProps.article.description,
+                title: nextProps.article.title,
+                imageId: nextProps.article.cover_id
+            });
+            this.props.onInfoUpdate('description', nextProps.article.description);
+            this.props.onInfoUpdate('title', nextProps.article.title);
         }
     }
 
@@ -60,8 +38,6 @@ class ArticleHeader extends React.Component {
 
     handleChange = name => event => {
         this.setState({ [name]: event.target.value });
-        // create / update : article editor updates => new props => update article with title & description
-        // image is automatically upload or replace if exist
         this.props.onInfoUpdate(name, event.target.value);
     }
 
@@ -82,6 +58,13 @@ class ArticleHeader extends React.Component {
                                         fullWidth
                                         rowsMax={6}
                                         value={this.state.title}
+                                        InputProps={{
+                                            endAdornment: (
+                                              <UI.InputAdornment position="end">
+                                                <UI.CreateIcon />
+                                              </UI.InputAdornment>
+                                            ),
+                                        }}
                                         onChange={this.handleChange('title').bind(this)}
                                     />
                                 </UI.Grid>
@@ -93,13 +76,24 @@ class ArticleHeader extends React.Component {
                                         fullWidth
                                         rowsMax={6}
                                         value={this.state.description}
+                                        InputProps={{
+                                            endAdornment: (
+                                              <UI.InputAdornment position="end">
+                                                <UI.CreateIcon />
+                                              </UI.InputAdornment>
+                                            ),
+                                        }}
                                         onChange={this.handleChange('description').bind(this)}
                                     />
                                 </UI.Grid>
                             </UI.Grid>
                         </UI.Grid>
                         <UI.Grid container item xs spacing={2}>
-                            <MediaCapture preview={true} maxCapture={1} multiple={false} onMediaUpdate={this.handleMedia.bind(this)}/>
+                            <MediaCapture preview={true}
+                                maxCapture={1} multiple={false}
+                                onMediaUpdate={this.handleMedia.bind(this)}
+                                imageId={this.state.imageId}
+                            />
                         </UI.Grid>
                     </UI.Grid>
                 </div>
@@ -114,13 +108,12 @@ const mapStateToProps = state => {
         user: state.Authentification.user,
         users: state.Admin.users,
         success: state.Success.success,
-        articles: state.Admin.articles
+        article: state.Admin.article
     };
 };
 
 const editorStyle = withStyles(EditorStyle)(ArticleHeader);
 
-// title, description, image
 ArticleHeader.propTypes = {
     onImageUpdate: PropTypes.func.isRequired,
     onInfoUpdate: PropTypes.func.isRequired,

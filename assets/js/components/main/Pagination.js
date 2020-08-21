@@ -10,7 +10,22 @@ import PaginationStyle from '../../UI/Pagination/style';
 class Pagination extends React.Component {
 
   state = {
+    data : null,
+    currentPage: 1,
+  }
 
+  componentDidMount() {
+    this.setState({
+      data: [...this.props.data]
+    })
+  }
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (nextProps.data !== this.props.data) {
+      this.setState({
+        data: nextProps.data
+      })
+    }
   }
 
   getPageCounter(dataLength, maxItem) {
@@ -38,10 +53,8 @@ class Pagination extends React.Component {
             return (
               <div>
                 {
-                  this.props.data
-                  && this.props.render
-                  && Array.isArray(this.props.data)
-                  && this.props.data.slice(start, start + this.props.maxItem).map((item, index) => (
+                  this.state.data
+                  && this.state.data.slice(start, start + this.props.maxItem).map((item, index) => (
                     this.props.render(item, index, start + index)
                   ))
                 }

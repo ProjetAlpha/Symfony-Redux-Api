@@ -4,6 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import PhotoCamera from '@material-ui/icons/PhotoCamera';
 import DeleteIcon from '@material-ui/icons/Delete';
+import { fetchImage } from '../../actions/Image';
 import Grid from '@material-ui/core/Grid';
 import red from '@material-ui/core/colors/red';
 import PropTypes from 'prop-types';
@@ -42,11 +43,35 @@ class MediaCapture extends React.Component {
 
     state = {
         images: [],
+        isLoaded: false,
         videos: []
     }
 
+    loadImage(id) {
+        if (this.state.images.length === 0 && id) {
+            this.setState({
+                isLoaded: true
+            })
+            fetchImage(id).then(res => {
+                console.log(res);
+                this.setState({
+                    images: [{value: res.data.image, name: 'complex'}]
+                });
+            });
+        }
+    }
+
     componentDidUpdate(prevProps, prevState) {
+        if (this.props.imageId !== prevProps.imageId) {
+            this.loadImage(this.props.imageId);
+        }
+
         if (this.state.images !== prevState.images || this.state.videos !== prevState.videos) {
+            if (this.state.isLoaded) {
+                return this.setState({
+                    isLoaded: false
+                });
+            }
             this.props.onMediaUpdate(this.state);
         }
     }
@@ -71,12 +96,14 @@ class MediaCapture extends React.Component {
     handleFile(name, file) {
         const fileReader = new FileReader();
 
+        console.log(file);
         fileReader.readAsDataURL(file);
         fileReader.onload = (e) => {
             if (this.state.images.length == this.props.maxCapture && this.props.maxCapture > 0) {
                 const capture = this.state.images.map((value, index) => {
                     return index == this.props.maxCapture - 1 ? this.getFileInfo(file.name, e.target.result) : value;
                 });
+                console.log(capture);
                 this.setState({
                     [name]: capture
                 })
@@ -85,6 +112,8 @@ class MediaCapture extends React.Component {
                     [name]: [...prevState[name], this.getFileInfo(file.name, e.target.result)]
                 }));
             }
+            console.log(e.target);
+            e.target.value = "";
         };
     }
 
@@ -105,6 +134,8 @@ class MediaCapture extends React.Component {
         } else {
             this.handleFile(name, file);
         }
+        // if a user upload same file onChange event is not triggered, input value must be clear
+        target.value = "";
     }
 
     render() {
@@ -161,7 +192,8 @@ MediaCapture.propTypes = {
     preview: PropTypes.bool,
     multiple: PropTypes.bool,
     maxCapture: PropTypes.number,
-    onMediaUpdate: PropTypes.func.isRequired
+    onMediaUpdate: PropTypes.func.isRequired,
+    imageId: PropTypes.number
 }
 
 export default withStyles(styles, { withTheme: true })(MediaCapture);

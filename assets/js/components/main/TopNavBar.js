@@ -9,7 +9,7 @@ import * as UI from '../../UI/NavBar/base';
 import DrawerContent from './Drawer';
 import NavBarStyle from '../../UI/NavBar/style';
 import { logout } from '../../actions/Authentification';
-import { makeStyles, withStyles, withTheme } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 
 class TopAppBar extends React.Component {
 
